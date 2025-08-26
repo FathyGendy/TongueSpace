@@ -1,0 +1,371 @@
+@page "/dashboard"
+@model CoursePLatform.Pages.DashboardModel
+@{
+    ViewData["Title"] = "My Dashboard - TongueSpace";
+}
+
+<div class="container mt-4">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-2">My Learning Dashboard</h1>
+                <p class="text-muted mb-0">Track your progress and continue your language journey</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <div class="user-avatar">
+                    <div class="avatar-circle">
+                        <i class="bi bi-person-fill"></i>
+                    </div>
+                    <div class="user-info ms-3">
+                        <h6 class="mb-0" id="userName">Loading...</h6>
+                        <small class="text-muted">Language Learner</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading your courses...</span>
+        </div>
+        <p class="mt-2">Loading your dashboard...</p>
+    </div>
+
+    <!-- Dashboard Content -->
+    <div id="dashboardContent" style="display: none;">
+        <!-- Stats Cards -->
+        <div class="row mb-4" id="statsSection">
+            <div class="col-md-3 mb-3">
+                <div class="stat-card card text-center">
+                    <div class="card-body">
+                        <div class="stat-icon mb-2">
+                            <i class="bi bi-book text-primary"></i>
+                        </div>
+                        <h4 class="stat-number text-primary" id="enrolledCount">0</h4>
+                        <p class="stat-label text-muted mb-0">Enrolled Courses</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="stat-card card text-center">
+                    <div class="card-body">
+                        <div class="stat-icon mb-2">
+                            <i class="bi bi-check-circle text-success"></i>
+                        </div>
+                        <h4 class="stat-number text-success" id="completedCount">0</h4>
+                        <p class="stat-label text-muted mb-0">Completed Courses</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="stat-card card text-center">
+                    <div class="card-body">
+                        <div class="stat-icon mb-2">
+                            <i class="bi bi-clock text-warning"></i>
+                        </div>
+                        <h4 class="stat-number text-warning" id="totalHours">0</h4>
+                        <p class="stat-label text-muted mb-0">Hours Learned</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="stat-card card text-center">
+                    <div class="card-body">
+                        <div class="stat-icon mb-2">
+                            <i class="bi bi-trophy text-danger"></i>
+                        </div>
+                        <h4 class="stat-number text-danger" id="averageProgress">0%</h4>
+                        <p class="stat-label text-muted mb-0">Avg Progress</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- My Courses Section -->
+        <div class="courses-section">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3>My Enrolled Courses</h3>
+                <a href="/Courses" class="btn btn-outline-primary">
+                    <i class="bi bi-plus-circle me-2"></i>Browse More Courses
+                </a>
+            </div>
+            
+            <div id="enrolledCourses" class="row">
+                <!-- Enrolled courses will be loaded here -->
+            </div>
+            
+            <div id="noCoursesMessage" class="text-center py-5" style="display: none;">
+                <div class="empty-state">
+                    <i class="bi bi-book display-4 text-muted mb-3"></i>
+                    <h4>No Enrolled Courses Yet</h4>
+                    <p class="text-muted">Start your language learning journey by enrolling in a course!</p>
+                    <a href="/Courses" class="btn btn-primary">
+                        <i class="bi bi-search me-2"></i>Explore Courses
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="activity-section mt-5">
+            <h3 class="mb-3">Recent Activity</h3>
+            <div class="card">
+                <div class="card-body">
+                    <div id="recentActivity">
+                        <div class="activity-item d-flex align-items-center py-2">
+                            <div class="activity-icon me-3">
+                                <i class="bi bi-play-circle text-primary"></i>
+                            </div>
+                            <div class="activity-content">
+                                <p class="mb-0">Welcome to TongueSpace! Start exploring courses to see your activity here.</p>
+                                <small class="text-muted">Just now</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Not Logged In Message -->
+    <div id="notLoggedIn" class="text-center py-5" style="display: none;">
+        <div class="empty-state">
+            <i class="bi bi-person-x display-4 text-muted mb-3"></i>
+            <h4>Please Log In</h4>
+            <p class="text-muted">You need to be logged in to view your dashboard.</p>
+            <a href="/Login" class="btn btn-primary">Log In</a>
+        </div>
+    </div>
+</div>
+
+<script>
+class DashboardManager {
+    constructor() {
+        this.enrolledCourses = [];
+        this.init();
+    }
+
+    async init() {
+        try {
+            await this.loadUserInfo();
+            await this.loadEnrolledCourses();
+            this.calculateStats();
+            this.renderCourses();
+            this.showContent();
+        } catch (error) {
+            if (error.message === 'Not logged in') {
+                this.showNotLoggedIn();
+            } else {
+                console.error('Dashboard error:', error);
+                this.showError('Error loading dashboard');
+            }
+        }
+    }
+
+    async loadUserInfo() {
+        // For now, we'll use a simple approach
+        // In a real app, you'd call an API to get user info
+        const userNameElement = document.getElementById('userName');
+        userNameElement.textContent = 'Welcome back!';
+    }
+
+    async loadEnrolledCourses() {
+        const response = await fetch('/api/enrollment/my-courses', {
+            credentials: 'same-origin'
+        });
+
+        if (response.status === 401) {
+            throw new Error('Not logged in');
+        }
+
+        if (response.ok) {
+            this.enrolledCourses = await response.json();
+        } else {
+            throw new Error('Failed to load courses');
+        }
+    }
+
+    calculateStats() {
+        const enrolled = this.enrolledCourses.length;
+        const completed = this.enrolledCourses.filter(c => c.isCompleted).length;
+        const totalMinutes = this.enrolledCourses.reduce((sum, c) => sum + (c.totalLessons * 15), 0); // Estimate
+        const totalHours = Math.round(totalMinutes / 60);
+        const avgProgress = enrolled > 0 ? 
+            Math.round(this.enrolledCourses.reduce((sum, c) => sum + c.progressPercentage, 0) / enrolled) : 0;
+
+        document.getElementById('enrolledCount').textContent = enrolled;
+        document.getElementById('completedCount').textContent = completed;
+        document.getElementById('totalHours').textContent = totalHours;
+        document.getElementById('averageProgress').textContent = `${avgProgress}%`;
+    }
+
+    renderCourses() {
+        const container = document.getElementById('enrolledCourses');
+        const noCoursesMessage = document.getElementById('noCoursesMessage');
+
+        if (this.enrolledCourses.length === 0) {
+            container.style.display = 'none';
+            noCoursesMessage.style.display = 'block';
+            return;
+        }
+
+        const languageFlags = {
+            'Arabic': '🇸🇦',
+            'English': '🇺🇸',
+            'German': '🇩🇪',
+            'French': '🇫🇷',
+            'Spanish': '🇪🇸'
+        };
+
+        container.innerHTML = this.enrolledCourses.map(course => `
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="course-card card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="language-flag">${languageFlags[course.language] || '🌍'}</span>
+                            <span class="badge ${course.isCompleted ? 'bg-success' : 'bg-primary'}">${course.level}</span>
+                        </div>
+                        <h6 class="card-title">${course.courseName}</h6>
+                        <p class="card-text text-muted small">${course.courseDescription.substring(0, 100)}...</p>
+                        
+                        <div class="progress mb-2">
+                            <div class="progress-bar ${course.isCompleted ? 'bg-success' : ''}" 
+                                 style="width: ${course.progressPercentage}%"></div>
+                        </div>
+                        <small class="text-muted mb-3 d-block">${Math.round(course.progressPercentage)}% Complete</small>
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="bi bi-person"></i> ${course.instructorName}
+                            </small>
+                            <a href="/course/${course.courseId}" class="btn btn-sm btn-outline-primary">
+                                ${course.isCompleted ? 'Review' : 'Continue'}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    showContent() {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('dashboardContent').style.display = 'block';
+    }
+
+    showNotLoggedIn() {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('notLoggedIn').style.display = 'block';
+    }
+
+    showError(message) {
+        document.getElementById('loading').innerHTML = `
+            <div class="alert alert-danger text-center">
+                <i class="bi bi-exclamation-triangle"></i> ${message}
+            </div>
+        `;
+    }
+}
+
+// Initialize dashboard
+document.addEventListener('DOMContentLoaded', () => {
+    new DashboardManager();
+});
+</script>
+
+<style>
+.dashboard-header {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(246, 147, 251, 0.1));
+    padding: 2rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+}
+
+.user-avatar {
+    display: flex;
+    align-items: center;
+}
+
+.avatar-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.stat-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.stat-icon {
+    font-size: 2rem;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.course-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.course-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+}
+
+.language-flag {
+    font-size: 1.5rem;
+}
+
+.progress-bar {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+}
+
+.empty-state i {
+    opacity: 0.5;
+}
+
+.activity-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(102, 126, 234, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@@media (max-width: 768px) {
+    .dashboard-header {
+        padding: 1.5rem;
+        text-align: center;
+    }
+    
+    .user-avatar {
+        justify-content: center;
+        margin-top: 1rem;
+    }
+}
+</style>

@@ -1,0 +1,841 @@
+@page "/course/{courseId:int}/exercises"
+@model CoursePLatform.Pages.ExercisesModel
+@{
+    ViewData["Title"] = "Interactive Exercises - TongueSpace";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-4">
+        @if (Model.CourseId > 0)
+        {
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Home</a></li>
+                    <li class="breadcrumb-item"><a href="/Courses">Courses</a></li>
+                    <li class="breadcrumb-item"><a href="/course/@Model.CourseId">Course Details</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Exercises</li>
+                </ol>
+            </nav>
+        }
+
+        <div class="text-center mb-5">
+            @if (Model.CourseId > 0)
+            {
+                <div class="mb-3">
+                    <a href="/course/@Model.CourseId" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Back to Course
+                    </a>
+                </div>
+            }
+            <h1 class="display-4 mb-2" style="background: linear-gradient(45deg, #667eea, #9b59b6, #f093fb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: bold;">
+                @Model.CourseName Exercises
+            </h1>
+            <p class="lead text-muted">Practice and test your language skills</p>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-8 mx-auto">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">Choose Exercise Type</h5>
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <button class="btn btn-outline-primary w-100 exercise-type-btn" data-type="multiple-choice">
+                                    <i class="bi bi-check2-square d-block fs-3 mb-2"></i>
+                                    Multiple Choice
+                                </button>
+                            </div>
+                            <div class="col-md-3">
+                                <button class="btn btn-outline-success w-100 exercise-type-btn" data-type="fill-blanks">
+                                    <i class="bi bi-input-cursor d-block fs-3 mb-2"></i>
+                                    Fill in Blanks
+                                </button>
+                            </div>
+                            <div class="col-md-3">
+                                <button class="btn btn-outline-info w-100 exercise-type-btn" data-type="matching">
+                                    <i class="bi bi-arrow-left-right d-block fs-3 mb-2"></i>
+                                    Matching
+                                </button>
+                            </div>
+                            <div class="col-md-3">
+                                <button class="btn btn-outline-warning w-100 exercise-type-btn" data-type="pronunciation">
+                                    <i class="bi bi-mic d-block fs-3 mb-2"></i>
+                                    Pronunciation
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="exerciseContainer" class="row justify-content-center d-none">
+            <div class="col-lg-8">
+                <div class="card shadow-lg">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0" id="exerciseTitle">Exercise</h5>
+                            <small class="text-muted" id="exerciseSubtitle">Question 1 of 5</small>
+                        </div>
+                        <div class="progress" style="width: 200px; height: 8px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" id="progressBar" style="width: 20%"></div>
+                        </div>
+                    </div>
+                    <div class="card-body" id="exerciseContent">
+                        </div>
+                    <div class="navigation-buttons d-flex justify-content-between" style="padding: 30px; margin-top: 20px;">
+                        <button class="btn btn-secondary btn-lg" id="prevBtn" disabled style="min-height: 50px; min-width: 120px;">
+                            <i class="bi bi-arrow-left me-2"></i>Previous
+                        </button>
+                        <div>
+                            <button class="btn btn-outline-danger me-2 btn-lg" id="resetBtn" style="min-height: 50px; min-width: 100px;">
+                                <i class="bi bi-arrow-clockwise me-2"></i>Reset
+                            </button>
+                            <button class="btn btn-primary btn-lg" id="nextBtn" style="min-height: 50px; min-width: 120px;">
+                                Next<i class="bi bi-arrow-right ms-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="resultsModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Exercise Results</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="text-center mb-4">
+                            <div class="score-circle mx-auto mb-3" id="scoreCircle">
+                                <span class="score-text" id="scoreText">0%</span>
+                            </div>
+                            <h4 id="resultMessage">Great job!</h4>
+                            <p class="text-muted" id="resultDetails">You got 4 out of 5 questions correct</p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="retryBtn">Try Again</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        class InteractiveExercise {
+            constructor() {
+                this.currentExerciseType = null;
+                this.currentQuestionIndex = 0;
+                this.questions = [];
+                this.userAnswers = [];
+                this.score = 0;
+                this.totalTime = 0;
+                this.startTime = null;
+                
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.initializeExerciseData();
+            }
+
+            setupEventListeners() {
+                // Exercise type selection
+                document.querySelectorAll('.exercise-type-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        this.startExercise(e.target.closest('button').dataset.type);
+                    });
+                });
+
+                // Navigation buttons - Fixed event listeners
+                const nextBtn = document.getElementById('nextBtn');
+                const prevBtn = document.getElementById('prevBtn');
+                const resetBtn = document.getElementById('resetBtn');
+                const retryBtn = document.getElementById('retryBtn');
+
+                if (nextBtn) {
+                    nextBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.nextQuestion();
+                    });
+                }
+
+                if (prevBtn) {
+                    prevBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.prevQuestion();
+                    });
+                }
+
+                if (resetBtn) {
+                    resetBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.resetExercise();
+                    });
+                }
+
+                if (retryBtn) {
+                    retryBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.retryExercise();
+                    });
+                }
+            }
+
+            initializeExerciseData() {
+                const courseId = @Model.CourseId;
+                
+                switch (courseId) {
+                    case 5:
+                        this.exerciseData = this.getSpanishExercises();
+                        break;
+                    case 4:
+                        this.exerciseData = this.getFrenchExercises();
+                        break;
+                    case 2:
+                        this.exerciseData = this.getGermanExercises();
+                        break;
+                    case 3:
+                        this.exerciseData = this.getEnglishExercises();
+                        break;
+                    case 1:
+                        this.exerciseData = this.getArabicExercises();
+                        break;
+                    default:
+                        this.exerciseData = this.getDefaultExercises();
+                        break;
+                }
+            }
+
+            getSpanishExercises() {
+                return {
+                    'multiple-choice': {
+                        title: 'Spanish for Travelers Quiz',
+                        questions: [
+                            {
+                                question: "How do you say 'Where is the airport?' in Spanish?",
+                                options: ['¿Dónde está el aeropuerto?', '¿Cuánto cuesta?', '¿Habla inglés?', '¿Qué hora es?'],
+                                correct: 0,
+                                explanation: "'¿Dónde está el aeropuerto?' means 'Where is the airport?' in Spanish."
+                            },
+                            {
+                                question: "What does '¿Cuánto cuesta?' mean?",
+                                options: ['What time is it?', 'How much does it cost?', 'Where is it?', 'Do you speak English?'],
+                                correct: 1,
+                                explanation: "'¿Cuánto cuesta?' means 'How much does it cost?'"
+                            },
+                            {
+                                question: "How do you say 'I need a taxi' in Spanish?",
+                                options: ['Necesito un hotel', 'Necesito un taxi', 'Necesito ayuda', 'Necesito un médico'],
+                                correct: 1,
+                                explanation: "'Necesito un taxi' means 'I need a taxi'."
+                            }
+                        ]
+                    },
+                    'fill-blanks': {
+                        title: 'Spanish Travel Phrases',
+                        questions: [
+                            {
+                                sentence: "Disculpe, ¿dónde está ____?",
+                                blank: 'el hotel',
+                                options: ['el hotel', 'la casa', 'el coche', 'la comida'],
+                                explanation: "'el hotel' means 'the hotel' - common for travelers."
+                            },
+                            {
+                                sentence: "¿Habla usted ____?",
+                                blank: 'inglés',
+                                options: ['español', 'inglés', 'francés', 'alemán'],
+                                explanation: "'inglés' means 'English' - useful phrase for travelers."
+                            }
+                        ]
+                    }
+                };
+            }
+
+            getFrenchExercises() {
+                return {
+                    'multiple-choice': {
+                        title: 'French Conversation Quiz',
+                        questions: [
+                            {
+                                question: "How do you say 'How are you?' in French?",
+                                options: ['Comment allez-vous?', 'Où êtes-vous?', 'Que faites-vous?', 'Qui êtes-vous?'],
+                                correct: 0,
+                                explanation: "'Comment allez-vous?' is the formal way to ask 'How are you?' in French."
+                            },
+                            {
+                                question: "What does 'Je voudrais' mean?",
+                                options: ['I am', 'I have', 'I would like', 'I go'],
+                                correct: 2,
+                                explanation: "'Je voudrais' means 'I would like' - very useful for conversations."
+                            }
+                        ]
+                    },
+                    'fill-blanks': {
+                        title: 'French Conversation Practice',
+                        questions: [
+                            {
+                                sentence: "Bonjour, je ____ Marie.",
+                                blank: 'suis',
+                                options: ['suis', 'es', 'est', 'sommes'],
+                                explanation: "'Je suis' means 'I am'."
+                            }
+                        ]
+                    }
+                };
+            }
+
+            getGermanExercises() {
+                return {
+                    'multiple-choice': {
+                        title: 'German Grammar Quiz',
+                        questions: [
+                            {
+                                question: "Which article goes with 'Haus' (house)?",
+                                options: ['der', 'die', 'das', 'den'],
+                                correct: 2,
+                                explanation: "'Haus' is neuter, so it uses 'das'."
+                            },
+                            {
+                                question: "How do you say 'I understand' in German?",
+                                options: ['Ich spreche', 'Ich verstehe', 'Ich höre', 'Ich sehe'],
+                                correct: 1,
+                                explanation: "'Ich verstehe' means 'I understand'."
+                            }
+                        ]
+                    },
+                    'fill-blanks': {
+                        title: 'German Grammar Practice',
+                        questions: [
+                            {
+                                sentence: "Ich ____ Deutsch.",
+                                blank: 'spreche',
+                                options: ['spreche', 'sprichst', 'spricht', 'sprechen'],
+                                explanation: "'Ich spreche' means 'I speak'."
+                            }
+                        ]
+                    }
+                };
+            }
+
+            getEnglishExercises() {
+                return {
+                    'multiple-choice': {
+                        title: 'Business English Quiz',
+                        questions: [
+                            {
+                                question: "Which is the most professional email greeting?",
+                                options: ['Hi there!', 'Dear Sir/Madam,', 'Hey!', 'Whats up?'],
+                                correct: 1,
+                                explanation: "'Dear Sir/Madam,' is the most formal and professional greeting."
+                            },
+                            {
+                                question: "How should you end a formal business email?",
+                                options: ['Bye!', 'Best regards,', 'See ya!', 'Later!'],
+                                correct: 1,
+                                explanation: "'Best regards,' is appropriate for business correspondence."
+                            }
+                        ]
+                    },
+                    'fill-blanks': {
+                        title: 'Business Communication',
+                        questions: [
+                            {
+                                sentence: "I would like to ____ a meeting for next week.",
+                                blank: 'schedule',
+                                options: ['make', 'schedule', 'do', 'have'],
+                                explanation: "'Schedule a meeting' is the correct business term."
+                            }
+                        ]
+                    }
+                };
+            }
+
+            getArabicExercises() {
+                return {
+                    'multiple-choice': {
+                        title: 'Arabic for Beginners Quiz',
+                        questions: [
+                            {
+                                question: "How do you say 'peace be upon you' in Arabic?",
+                                options: ['السلام عليكم', 'أهلا وسهلا', 'مع السلامة', 'إن شاء الله'],
+                                correct: 0,
+                                explanation: "'السلام عليكم' (As-salāmu ʿalaykum) is the traditional Islamic greeting."
+                            },
+                            {
+                                question: "What does 'شكرا' mean?",
+                                options: ['Hello', 'Goodbye', 'Please', 'Thank you'],
+                                correct: 3,
+                                explanation: "'شكرا' (Shukran) means 'thank you' in Arabic."
+                            }
+                        ]
+                    },
+                    'fill-blanks': {
+                        title: 'Basic Arabic',
+                        questions: [
+                            {
+                                sentence: "____ اسمي أحمد",
+                                blank: 'مرحبا',
+                                options: ['مرحبا', 'شكرا', 'مع السلامة', 'أهلا'],
+                                explanation: "'مرحبا' (Marhaban) means 'hello' - appropriate way to start."
+                            }
+                        ]
+                    }
+                };
+            }
+
+            getDefaultExercises() {
+                return {
+                    'multiple-choice': {
+                        title: 'Advanced English Writing Quiz',
+                        questions: [
+                            {
+                                question: "Which sentence demonstrates the most sophisticated use of parallel structure?",
+                                options: [
+                                    'She likes reading, writing, and to paint.',
+                                    'She likes reading, writing, and painting.',
+                                    'She likes to read, write, and painting.',
+                                    'She likes reading, to write, and painting.'
+                                ],
+                                correct: 1,
+                                explanation: "Parallel structure requires consistent grammatical forms. 'Reading, writing, and painting' are all gerunds."
+                            },
+                            {
+                                question: "Which transition best shows contrast in academic writing?",
+                                options: [
+                                    'Also, the study revealed unexpected results.',
+                                    'Furthermore, the study revealed unexpected results.',
+                                    'Nevertheless, the study revealed unexpected results.',
+                                    'Moreover, the study revealed unexpected results.'
+                                ],
+                                correct: 2,
+                                explanation: "'Nevertheless' indicates contrast, while the others show addition or continuation."
+                            },
+                            {
+                                question: "Which sentence avoids redundancy most effectively?",
+                                options: [
+                                    'The final conclusion of the study was definitive.',
+                                    'The study reached a definitive conclusion.',
+                                    'The study\'s final conclusion was definitively conclusive.',
+                                    'The definitive final conclusion of the study concluded.'
+                                ],
+                                correct: 1,
+                                explanation: "This version eliminates redundant words like 'final conclusion' and unnecessary adverbs."
+                            },
+                            {
+                                question: "Which sentence demonstrates proper use of the subjunctive mood?",
+                                options: [
+                                    'If I was the manager, I would change the policy.',
+                                    'If I were the manager, I would change the policy.',
+                                    'If I am the manager, I would change the policy.',
+                                    'If I will be the manager, I would change the policy.'
+                                ],
+                                correct: 1,
+                                explanation: "The subjunctive 'were' is correct for hypothetical situations, not 'was'."
+                            },
+                            {
+                                question: "Which sentence shows the most concise academic style?",
+                                options: [
+                                    'Due to the fact that the experiment failed, we need to redesign it.',
+                                    'Because the experiment failed, we need to redesign it.',
+                                    'In light of the fact that the experiment was unsuccessful, redesigning is necessary.',
+                                    'The experiment having failed, it is necessary that we redesign it.'
+                                ],
+                                correct: 1,
+                                explanation: "'Because' is more concise than wordy phrases like 'due to the fact that'."
+                            }
+                        ]
+                    },
+                    'fill-blanks': {
+                        title: 'Advanced Writing Techniques',
+                        questions: [
+                            {
+                                sentence: "The research findings ____ the established theory, requiring further investigation.",
+                                blank: 'contradict',
+                                options: ['contradict', 'support', 'ignore', 'mention'],
+                                explanation: "'Contradict' fits the context of requiring further investigation due to conflicting evidence."
+                            },
+                            {
+                                sentence: "The author's argument is ____ supported by empirical evidence and logical reasoning.",
+                                blank: 'convincingly',
+                                options: ['convincingly', 'barely', 'somewhat', 'occasionally'],
+                                explanation: "'Convincingly' indicates strong support, which fits with 'empirical evidence and logical reasoning'."
+                            },
+                            {
+                                sentence: "Despite initial skepticism, the proposal gained ____ among committee members.",
+                                blank: 'traction',
+                                options: ['traction', 'resistance', 'confusion', 'indifference'],
+                                explanation: "'Gained traction' means to gain momentum or acceptance, contrasting with 'initial skepticism'."
+                            },
+                            {
+                                sentence: "The study's methodology was ____, ensuring reliable and valid results.",
+                                blank: 'rigorous',
+                                options: ['rigorous', 'casual', 'questionable', 'limited'],
+                                explanation: "'Rigorous' methodology leads to reliable and valid results in academic research."
+                            },
+                            {
+                                sentence: "The writer's use of metaphor ____ the abstract concept, making it accessible to readers.",
+                                blank: 'illuminates',
+                                options: ['illuminates', 'obscures', 'complicates', 'dismisses'],
+                                explanation: "'Illuminates' means to clarify or make clear, which helps make abstract concepts accessible."
+                            }
+                        ]
+                    },
+                    'matching': {
+                        title: 'Writing Terms & Definitions',
+                        questions: [
+                            {
+                                question: "Match the writing technique with its definition:",
+                                pairs: [
+                                    { left: 'Parallelism', right: 'Using similar grammatical structures for balance and clarity' },
+                                    { left: 'Concision', right: 'Expressing ideas clearly with minimal words' },
+                                    { left: 'Coherence', right: 'Logical connection and flow between ideas' },
+                                    { left: 'Emphasis', right: 'Highlighting important points through structure or word choice' }
+                                ],
+                                explanation: "These are fundamental concepts in advanced writing that improve clarity and impact."
+                            }
+                        ]
+                    },
+                    'pronunciation': {
+                        title: 'Academic Vocabulary Pronunciation',
+                        questions: [
+                            {
+                                word: 'Rhetoric',
+                                phonetic: '/ˈretərɪk/',
+                                definition: 'The art of effective or persuasive speaking or writing',
+                                audio: null // You can add audio files later
+                            },
+                            {
+                                word: 'Synthesis',
+                                phonetic: '/ˈsɪnθəsɪs/',
+                                definition: 'The combination of components to form a connected whole',
+                                audio: null
+                            },
+                            {
+                                word: 'Paradigm',
+                                phonetic: '/ˈpærədaɪm/',
+                                definition: 'A typical example or pattern of something; a model',
+                                audio: null
+                            }
+                        ]
+                    }
+                };
+            }
+            
+           startExercise(type) {
+                this.currentExerciseType = type;
+                this.currentQuestionIndex = 0;
+                this.questions = this.exerciseData[type].questions;
+                this.userAnswers = new Array(this.questions.length).fill(null);
+                this.score = 0;
+                this.startTime = Date.now();
+
+                document.getElementById('exerciseContainer').classList.remove('d-none');
+                document.getElementById('exerciseTitle').textContent = this.exerciseData[type].title;
+                
+                this.renderQuestion();
+                this.updateProgress();
+                this.scrollToExercise();
+            }
+
+            renderQuestion() {
+                const question = this.questions[this.currentQuestionIndex];
+                const content = document.getElementById('exerciseContent');
+                
+                document.getElementById('exerciseSubtitle').textContent = 
+                    `Question ${this.currentQuestionIndex + 1} of ${this.questions.length}`;
+
+                switch(this.currentExerciseType) {
+                    case 'multiple-choice':
+                        content.innerHTML = this.renderMultipleChoice(question);
+                        break;
+                    case 'fill-blanks':
+                        content.innerHTML = this.renderFillBlanks(question);
+                        break;
+                    default:
+                        content.innerHTML = '<p>Exercise type not implemented yet.</p>';
+                }
+
+                // Update navigation buttons
+                const prevBtn = document.getElementById('prevBtn');
+                const nextBtn = document.getElementById('nextBtn');
+                
+                prevBtn.disabled = this.currentQuestionIndex === 0;
+                nextBtn.innerHTML = this.currentQuestionIndex === this.questions.length - 1 ? 
+                    'Finish<i class="bi bi-check-circle ms-2"></i>' : 
+                    'Next<i class="bi bi-arrow-right ms-2"></i>';
+
+                // Restore previous answer if exists
+                const previousAnswer = this.userAnswers[this.currentQuestionIndex];
+                if (previousAnswer !== null) {
+                    if (this.currentExerciseType === 'multiple-choice') {
+                        const radio = document.querySelector(`input[name="answer"][value="${previousAnswer}"]`);
+                        if (radio) radio.checked = true;
+                    } else if (this.currentExerciseType === 'fill-blanks') {
+                        const select = document.querySelector('select[name="answer"]');
+                        if (select) select.value = previousAnswer;
+                    }
+                }
+            }
+
+            renderMultipleChoice(question) {
+                return `
+                    <h5 class="mb-4">${question.question}</h5>
+                    <div class="options-container">
+                        ${question.options.map((option, index) => `
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="radio" name="answer" id="option${index}" value="${index}">
+                                <label class="form-check-label option-label" for="option${index}">
+                                    ${option}
+                                </label>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            renderFillBlanks(question) {
+                const sentenceParts = question.sentence.split('____');
+                return `
+                    <h5 class="mb-4">Choose the correct word to complete the sentence:</h5>
+                    <div class="sentence-container mb-4">
+                        <p class="sentence-text">
+                            ${sentenceParts[0]}
+                            <select class="form-select d-inline-block" style="width: auto; min-width: 120px;" name="answer">
+                                <option value="">Choose...</option>
+                                ${question.options.map((option, index) => `
+                                    <option value="${option}">${option}</option>
+                                `).join('')}
+                            </select>
+                            ${sentenceParts[1] || ''}
+                        </p>
+                    </div>
+                `;
+            }
+            
+            nextQuestion() {
+                // Save current answer
+                this.saveCurrentAnswer();
+                
+                if (this.currentQuestionIndex === this.questions.length - 1) {
+                    this.finishExercise();
+                } else {
+                    this.currentQuestionIndex++;
+                    this.renderQuestion();
+                    this.updateProgress();
+                }
+            }
+
+            prevQuestion() {
+                if (this.currentQuestionIndex > 0) {
+                    this.saveCurrentAnswer(); // Save current answer before moving
+                    this.currentQuestionIndex--;
+                    this.renderQuestion();
+                    this.updateProgress();
+                }
+            }
+
+            saveCurrentAnswer() {
+                if (this.currentExerciseType === 'multiple-choice') {
+                    const checkedRadio = document.querySelector('[name="answer"]:checked');
+                    this.userAnswers[this.currentQuestionIndex] = checkedRadio ? checkedRadio.value : null;
+                } else if (this.currentExerciseType === 'fill-blanks') {
+                    const selectElement = document.querySelector('select[name="answer"]');
+                    this.userAnswers[this.currentQuestionIndex] = selectElement ? selectElement.value : null;
+                }
+            }
+
+            updateProgress() {
+                const progress = ((this.currentQuestionIndex + 1) / this.questions.length) * 100;
+                document.getElementById('progressBar').style.width = progress + '%';
+            }
+
+            finishExercise() {
+                this.calculateScore();
+                this.showResults();
+            }
+
+            calculateScore() {
+                this.score = 0;
+                this.userAnswers.forEach((answer, index) => {
+                    const question = this.questions[index];
+                    if (this.currentExerciseType === 'multiple-choice') {
+                        if (parseInt(answer) === question.correct) {
+                            this.score++;
+                        }
+                    } else if (this.currentExerciseType === 'fill-blanks') {
+                        if (answer === question.blank) {
+                            this.score++;
+                        }
+                    }
+                    // Add other exercise type scoring logic here
+                });
+            }
+
+            showResults() {
+                const percentage = Math.round((this.score / this.questions.length) * 100);
+                const totalTime = Math.round((Date.now() - this.startTime) / 1000);
+                
+                document.getElementById('scoreText').textContent = percentage + '%';
+                document.getElementById('resultDetails').textContent = 
+                    `You got ${this.score} out of ${this.questions.length} questions correct in ${totalTime} seconds`;
+                
+                // Update score circle color
+                const scoreCircle = document.getElementById('scoreCircle');
+                scoreCircle.className = 'score-circle mx-auto mb-3 ' + 
+                    (percentage >= 80 ? 'excellent' : percentage >= 60 ? 'good' : 'needs-improvement');
+                
+                // Set result message
+                const resultMessage = document.getElementById('resultMessage');
+                if (percentage >= 80) {
+                    resultMessage.textContent = 'Excellent work!';
+                } else if (percentage >= 60) {
+                    resultMessage.textContent = 'Good job!';
+                } else {
+                    resultMessage.textContent = 'Keep practicing!';
+                }
+                
+                const modal = new bootstrap.Modal(document.getElementById('resultsModal'));
+                modal.show();
+            }
+
+            resetExercise() {
+                this.currentQuestionIndex = 0;
+                this.userAnswers = new Array(this.questions.length).fill(null);
+                this.renderQuestion();
+                this.updateProgress();
+            }
+
+            retryExercise() {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('resultsModal'));
+                if (modal) {
+                    modal.hide();
+                }
+                this.resetExercise();
+            }
+
+            scrollToExercise() {
+                document.getElementById('exerciseContainer').scrollIntoView({ 
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        }
+
+        // Initialize the exercise system
+        document.addEventListener('DOMContentLoaded', () => {
+            new InteractiveExercise();
+        });
+    </script>
+
+    <style>
+        .exercise-type-btn {
+            height: 120px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .exercise-type-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .option-label {
+            font-size: 1.1rem;
+            padding: 12px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: block;
+            margin-left: 0;
+        }
+
+        .form-check-input:checked + .option-label {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .option-label:hover {
+            background-color: #f8f9fa;
+            border-color: #667eea;
+        }
+
+        .sentence-text {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 8px solid;
+            transition: all 0.3s ease;
+        }
+
+        .score-circle.excellent {
+            border-color: #28a745;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .score-circle.good {
+            border-color: #ffc107;
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+            color: white;
+        }
+
+        .score-circle.needs-improvement {
+            border-color: #dc3545;
+            background: linear-gradient(135deg, #dc3545, #e83e8c);
+            color: white;
+        }
+
+        .score-text {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        @@keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @@media (max-width: 768px) {
+            .exercise-type-btn {
+                height: 100px;
+                margin-bottom: 15px;
+            }
+        }
+    </style>
+</body>
+</html>

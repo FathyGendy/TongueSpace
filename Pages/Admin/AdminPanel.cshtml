@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - TongueSpace</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        .admin-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .stats-card {
+            border-radius: 12px;
+            transition: transform 0.2s ease;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .application-card {
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            border-left: 4px solid #e9ecef;
+        }
+        
+        .application-card.pending {
+            border-left-color: #ffc107;
+        }
+        
+        .application-card.under-review {
+            border-left-color: #17a2b8;
+        }
+        
+        .application-card.approved {
+            border-left-color: #28a745;
+        }
+        
+        .application-card.rejected {
+            border-left-color: #dc3545;
+        }
+        
+        .application-card:hover {
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        
+        .quick-actions {
+            position: sticky;
+            top: 20px;
+        }
+        
+        .filter-btn {
+            border-radius: 20px;
+            margin: 2px;
+        }
+        
+        .filter-btn.active {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
+        }
+        
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .action-btn {
+            border-radius: 20px;
+            padding: 0.375rem 1rem;
+            font-size: 0.875rem;
+        }
+        
+        .admin-sidebar {
+            background: #f8f9fa;
+            min-height: calc(100vh - 76px);
+            border-radius: 0 12px 12px 0;
+        }
+        
+        .nav-link {
+            border-radius: 8px;
+            margin: 2px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+        }
+        
+        .nav-link.active {
+            background: #667eea;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Admin Header -->
+    <nav class="navbar navbar-expand-lg admin-header">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold" href="#">
+                <i class="bi bi-shield-check me-2"></i>TongueSpace Admin
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link text-white" href="/">
+                    <i class="bi bi-house me-1"></i>Back to Site
+                </a>
+                <a class="nav-link text-white" href="#" onclick="logout()">
+                    <i class="bi bi-box-arrow-right me-1"></i>Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-lg-2 col-md-3 p-0">
+                <div class="admin-sidebar p-3">
+                    <nav class="nav flex-column">
+                        <a class="nav-link active" href="#" onclick="showSection('applications')">
+                            <i class="bi bi-file-person me-2"></i>Applications
+                        </a>
+                        <a class="nav-link" href="#" onclick="showSection('instructors')">
+                            <i class="bi bi-mortarboard me-2"></i>Instructors
+                        </a>
+                        <a class="nav-link" href="#" onclick="showSection('courses')">
+                            <i class="bi bi-book me-2"></i>Courses
+                        </a>
+                        <a class="nav-link" href="#" onclick="showSection('users')">
+                            <i class="bi bi-people me-2"></i>Users
+                        </a>
+                        <a class="nav-link" href="#" onclick="showSection('settings')">
+                            <i class="bi bi-gear me-2"></i>Settings
+                        </a>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-lg-10 col-md-9 p-4">
+                <!-- Applications Section -->
+                <div id="applications-section">
+                    <!-- Stats Overview -->
+                    <div class="row mb-4">
+                        <div class="col-md-3 mb-3">
+                            <div class="card stats-card border-warning">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-clock-history display-4 text-warning mb-2"></i>
+                                    <h4 class="fw-bold" id="pendingCount">12</h4>
+                                    <p class="text-muted mb-0">Pending Review</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card stats-card border-info">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-eye display-4 text-info mb-2"></i>
+                                    <h4 class="fw-bold" id="reviewCount">5</h4>
+                                    <p class="text-muted mb-0">Under Review</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card stats-card border-success">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-check-circle display-4 text-success mb-2"></i>
+                                    <h4 class="fw-bold" id="approvedCount">23</h4>
+                                    <p class="text-muted mb-0">Approved</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card stats-card border-danger">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-x-circle display-4 text-danger mb-2"></i>
+                                    <h4 class="fw-bold" id="rejectedCount">8</h4>
+                                    <p class="text-muted mb-0">Rejected</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-9">
+                            <!-- Filter and Search -->
+                            <div class="card mb-4">
+                                <div class="card-body">
+                                    <div class="d-flex flex-wrap align-items-center justify-content-between">
+                                        <div class="filter-buttons mb-2 mb-md-0">
+                                            <button class="btn btn-outline-secondary filter-btn active" onclick="filterApplications('all')">
+                                                All <span class="badge bg-secondary ms-1">48</span>
+                                            </button>
+                                            <button class="btn btn-outline-warning filter-btn" onclick="filterApplications('pending')">
+                                                Pending <span class="badge bg-warning ms-1">12</span>
+                                            </button>
+                                            <button class="btn btn-outline-info filter-btn" onclick="filterApplications('under-review')">
+                                                Under Review <span class="badge bg-info ms-1">5</span>
+                                            </button>
+                                            <button class="btn btn-outline-success filter-btn" onclick="filterApplications('approved')">
+                                                Approved <span class="badge bg-success ms-1">23</span>
+                                            </button>
+                                            <button class="btn btn-outline-danger filter-btn" onclick="filterApplications('rejected')">
+                                                Rejected <span class="badge bg-danger ms-1">8</span>
+                                            </button>
+                                        </div>
+                                        <div class="search-box">
+                                            <input type="text" class="form-control" placeholder="Search applications..." 
+                                                   onkeyup="searchApplications(this.value)">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Applications List -->
+                            <div id="applications-list">
+                                <!-- Sample Applications -->
+                                <div class="card application-card pending mb-3" data-status="pending">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-start">
+                                            <div class="user-avatar me-3">AH</div>
+                                            <div class="flex-grow-1">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div>
+                                                        <h5 class="mb-1">Ahmed Hassan</h5>
+                                                        <p class="text-muted mb-1">ahmed.hassan@email.com</p>
+                                                        <small class="text-muted">Applied 2 days ago</small>
+                                                    </div>
+                                                    <span class="badge bg-warning">Pending</span>
+                                                </div>
+                                                <div class="mt-2">
+                                                    <p class="mb-1"><strong>Expertise:</strong> Native Arabic speaker, Advanced English (C1)</p>
+                                                    <p class="mb-1"><strong>Experience:</strong> 5 years teaching Arabic at local language center...</p>
+                                                    <div class="mt-3">
+                                                        <button class="btn btn-primary action-btn me-2" onclick="viewApplication('1')">
+                                                            <i class="bi bi-eye me-1"></i>View Details
+                                                        </button>
+                                                        <button class="btn btn-success action-btn me-2" onclick="approveApplication('1')">
+                                                            <i class="bi bi-check me-1"></i>Approve
+                                                        </button>
+                                                        <button class="btn btn-outline-info action-btn me-2" onclick="setUnderReview('1')">
+                                                            <i class="bi bi-eye-fill me-1"></i>Under Review
+                                                        </button>
+                                                        <button class="btn btn-outline-danger action-btn" onclick="rejectApplication('1')">
+                                                            <i class="bi bi-x me-1"></i>Reject
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card application-card under-review mb-3" data-status="under-review">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-start">
+                                            <div class="user-avatar me-3">SM</div>
+                                            <div class="flex-grow-1">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div>
+                                                        <h5 class="mb-1">Sarah Miller</h5>
+                                                        <p class="text-muted mb-1">sarah.miller@email.com</p>
+                                                        <small class="text-muted">Applied 5 days ago</small>
+                                                    </div>
+                                                    <span class="badge bg-info">Under Review</span>
+                                                </div>
+                                                <div class="mt-2">
+                                                    <p class="mb-1"><strong>Expertise:</strong> Certified French teacher (DELF), Native English</p>
+                                                    <p class="mb-1"><strong>Experience:</strong> 8 years teaching French in high schools...</p>
+                                                    <div class="mt-3">
+                                                        <button class="btn btn-primary action-btn me-2" onclick="viewApplication('2')">
+                                                            <i class="bi bi-eye me-1"></i>View Details
+                                                        </button>
+                                                        <button class="btn btn-success action-btn me-2" onclick="approveApplication('2')">
+                                                            <i class="bi bi-check me-1"></i>Approve
+                                                        </button>
+                                                        <button class="btn btn-outline-danger action-btn" onclick="rejectApplication('2')">
+                                                            <i class="bi bi-x me-1"></i>Reject
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card application-card approved mb-3" data-status="approved">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-start">
+                                            <div class="user-avatar me-3">MR</div>
+                                            <div class="flex-grow-1">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div>
+                                                        <h5 class="mb-1">Maria Rodriguez</h5>
+                                                        <p class="text-muted mb-1">maria.rodriguez@email.com</p>
+                                                        <small class="text-muted">Approved 1 week ago</small>
+                                                    </div>
+                                                    <span class="badge bg-success">Approved</span>
+                                                </div>
+                                                <div class="mt-2">
+                                                    <p class="mb-1"><strong>Expertise:</strong> Native Spanish speaker, Certified ESL teacher</p>
+                                                    <p class="mb-1"><strong>Experience:</strong> 10+ years teaching Spanish online...</p>
+                                                    <div class="mt-3">
+                                                        <button class="btn btn-primary action-btn me-2" onclick="viewApplication('3')">
+                                                            <i class="bi bi-eye me-1"></i>View Details
+                                                        </button>
+                                                        <button class="btn btn-outline-secondary action-btn" disabled>
+                                                            <i class="bi bi-check me-1"></i>Already Approved
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+            
+                                <div class="card application-card rejected mb-3" data-status="rejected">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-start">
+                                            <div class="user-avatar me-3">JD</div>
+                                            <div class="flex-grow-1">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div>
+                                                        <h5 class="mb-1">John Doe</h5>
+                                                        <p class="text-muted mb-1">john.doe@email.com</p>
+                                                        <small class="text-muted">Rejected 3 days ago</small>
+                                                    </div>
+                                                    <span class="badge bg-danger">Rejected</span>
+                                                </div>
+                                                <div class="mt-2">
+                                                    <p class="mb-1"><strong>Expertise:</strong> Beginner German learner</p>
+                                                    <p class="mb-1"><strong>Reason:</strong> Insufficient qualifications</p>
+                                                    <div class="mt-3">
+                                                        <button class="btn btn-primary action-btn me-2" onclick="viewApplication('4')">
+                                                            <i class="bi bi-eye me-1"></i>View Details
+                                                        </button>
+                                                        <button class="btn btn-outline-warning action-btn" onclick="reconsiderApplication('4')">
+                                                            <i class="bi bi-arrow-clockwise me-1"></i>Reconsider
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions Sidebar -->
+                        <div class="col-lg-3">
+                            <div class="quick-actions">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="mb-0"><i class="bi bi-lightning me-2"></i>Quick Actions</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <button class="btn btn-warning w-100 mb-2" onclick="bulkApprove()">
+                                            <i class="bi bi-check-all me-1"></i>Bulk Approve Pending
+                                        </button>
+                                        <button class="btn btn-info w-100 mb-2" onclick="exportData()">
+                                            <i class="bi bi-download me-1"></i>Export Data
+                                        </button>
+                                        <button class="btn btn-outline-primary w-100" onclick="sendReminder()">
+                                            <i class="bi bi-envelope me-1"></i>Send Update Emails
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="card mt-3">
+                                    <div class="card-header">
+                                        <h6 class="mb-0"><i class="bi bi-graph-up me-2"></i>Recent Activity</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="small">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <i class="bi bi-check-circle text-success me-2"></i>
+                                                <span>Maria R. approved</span>
+                                            </div>
+                                            <div class="d-flex align-items-center mb-2">
+                                                <i class="bi bi-file-plus text-primary me-2"></i>
+                                                <span>New application from Ahmed H.</span>
+                                            </div>
+                                            <div class="d-flex align-items-center mb-2">
+                                                <i class="bi bi-x-circle text-danger me-2"></i>
+                                                <span>John D. rejected</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Other sections (placeholder) -->
+                <div id="instructors-section" style="display: none;">
+                    <h2>Instructor Management</h2>
+                    <p class="text-muted">Manage approved instructors and their courses.</p>
+                </div>
+
+                <div id="courses-section" style="display: none;">
+                    <h2>Course Management</h2>
+                    <p class="text-muted">Manage courses and content moderation.</p>
+                </div>
+
+                <div id="users-section" style="display: none;">
+                    <h2>User Management</h2>
+                    <p class="text-muted">Manage all platform users.</p>
+                </div>
+
+                <div id="settings-section" style="display: none;">
+                    <h2>System Settings</h2>
+                    <p class="text-muted">Configure platform settings and preferences.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Details Modal -->
+    <div class="modal fade" id="applicationModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-person-lines-fill me-2"></i>Application Details
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="applicationDetails">
+                        <!-- Content will be loaded here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-success" onclick="approveFromModal()">
+                        <i class="bi bi-check me-1"></i>Approve
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="rejectFromModal()">
+                        <i class="bi bi-x me-1"></i>Reject
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rejection Reason Modal -->
+    <div class="modal fade" id="rejectionModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-x-circle me-2"></i>Reject Application
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="rejectionForm">
+                        <div class="mb-3">
+                            <label class="form-label">Reason for rejection *</label>
+                            <select class="form-select" id="rejectionReason" required>
+                                <option value="">Select a reason...</option>
+                                <option value="insufficient-qualifications">Insufficient teaching qualifications</option>
+                                <option value="incomplete-application">Incomplete application</option>
+                                <option value="language-proficiency">Insufficient language proficiency</option>
+                                <option value="inappropriate-content">Inappropriate content in application</option>
+                                <option value="other">Other (specify below)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Additional notes (optional)</label>
+                            <textarea class="form-control" id="rejectionNotes" rows="3" 
+                                      placeholder="Provide additional feedback for the applicant..."></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" onclick="confirmRejection()">
+                        <i class="bi bi-x me-1"></i>Reject Application
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Sample data
+        const sampleApplications = {
+            '1': {
+                id: '1',
+                firstName: 'Ahmed',
+                lastName: 'Hassan',
+                email: 'ahmed.hassan@email.com',
+                phoneNumber: '+20 100 123 4567',
+                expertise: 'Native Arabic speaker, Advanced English (C1 level), Intermediate French',
+                experience: '5 years teaching Arabic at local language center. Certified TESOL instructor with experience teaching conversational Arabic to foreigners. Worked with students from various backgrounds including business professionals and university students.',
+                bio: 'Passionate language educator with a deep love for Arabic literature and culture. I believe in making language learning fun and practical through real-life conversations and cultural immersion. My teaching style focuses on building confidence and practical communication skills.',
+                motivationReason: 'I want to share the beauty of Arabic language and culture with a global audience. Teaching online allows me to reach more students and help break down cultural barriers through language learning.',
+                applicationDate: '2025-08-13',
+                status: 'Pending'
+            },
+            '2': {
+                id: '2',
+                firstName: 'Sarah',
+                lastName: 'Miller',
+                email: 'sarah.miller@email.com',
+                phoneNumber: '+1 555 987 6543',
+                expertise: 'Certified French teacher (DELF B2), Native English speaker',
+                experience: '8 years teaching French in high schools and private tutoring. Master\'s degree in French Literature. Experience with online teaching platforms and curriculum development.',
+                bio: 'Experienced French educator with a passion for francophone cultures. I specialize in helping English speakers master French pronunciation and grammar through interactive lessons and cultural context.',
+                motivationReason: 'Online teaching allows me to help more students discover the joy of French language and connect with francophone cultures around the world.',
+                applicationDate: '2025-08-10',
+                status: 'UnderReview'
+            }
+        };
+
+        let currentApplicationId = null;
+
+        // Navigation functions
+        function showSection(section) {
+            // Hide all sections
+            document.querySelectorAll('[id$="-section"]').forEach(s => s.style.display = 'none');
+            
+            // Show selected section
+            document.getElementById(section + '-section').style.display = 'block';
+            
+            // Update nav active state
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        // Filter functions
+        function filterApplications(status) {
+            const cards = document.querySelectorAll('.application-card');
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            
+            // Update active filter button
+            filterBtns.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Show/hide cards
+            cards.forEach(card => {
+                if (status === 'all' || card.dataset.status === status) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        function searchApplications(query) {
+            const cards = document.querySelectorAll('.application-card');
+            query = query.toLowerCase();
+            
+            cards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                if (text.includes(query)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Application actions
+        function viewApplication(id) {
+            const app = sampleApplications[id];
+            if (!app) return;
+
+            const detailsHtml = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-primary">Personal Information</h6>
+                        <p><strong>Name:</strong> ${app.firstName} ${app.lastName}</p>
+                        <p><strong>Email:</strong> ${app.email}</p>
+                        <p><strong>Phone:</strong> ${app.phoneNumber}</p>
+                        <p><strong>Applied:</strong> ${new Date(app.applicationDate).toLocaleDateString()}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-primary">Status</h6>
+                        <span class="badge bg-${getStatusColor(app.status)} fs-6">${app.status}</span>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="mb-4">
+                    <h6 class="text-primary">Language Expertise</h6>
+                    <p>${app.expertise}</p>
+                </div>
+                
+                <div class="mb-4">
+                    <h6 class="text-primary">Teaching Experience</h6>
+                    <p>${app.experience}</p>
+                </div>
+                
+                <div class="mb-4">
+                    <h6 class="text-primary">About the Applicant</h6>
+                    <p>${app.bio}</p>
+                </div>
+                
+                <div class="mb-4">
+                    <h6 class="text-primary">Motivation</h6>
+                    <p>${app.motivationReason}</p>
+                </div>
+            `;
+
+            document.getElementById('applicationDetails').innerHTML = detailsHtml;
+            currentApplicationId = id;
+            
+            const modal = new bootstrap.Modal(document.getElementById('applicationModal'));
+            modal.show();
+        }
+
+        function approveApplication(id) {
+            if (confirm('Are you sure you want to approve this application?')) {
+                // In real implementation, make API call
+                console.log('Approving application:', id);
+                showToast('Application approved successfully!', 'success');
+                updateApplicationStatus(id, 'approved');
+            }
+        }
+
+        function setUnderReview(id) {
+            // In real implementation, make API call
+            console.log('Setting application under review:', id);
+            showToast('Application moved to under review', 'info');
+            updateApplicationStatus(id, 'under-review');
+        }
+
+        function rejectApplication(id) {
+            currentApplicationId = id;
+            const modal = new bootstrap.Modal(document.getElementById('rejectionModal'));
+            modal.show();
+        }
+
+        function confirmRejection() {
+            const reason = document.getElementById('rejectionReason').value;
+            const notes = document.getElementById('rejectionNotes').value;
+            
+            if (!reason) {
+                alert('Please select a reason for rejection.');
+                return;
+            }
+
+            // In real implementation, make API call with reason and notes
+            console.log('Rejecting application:', currentApplicationId, 'Reason:', reason, 'Notes:', notes);
+            
+            updateApplicationStatus(currentApplicationId, 'rejected');
+            showToast('Application rejected and user notified', 'danger');
+            
+            // Close modal and reset form
+            bootstrap.Modal.getInstance(document.getElementById('rejectionModal')).hide();
+            document.getElementById('rejectionForm').reset();
+        }
+
+        function reconsiderApplication(id) {
+            if (confirm('Move this application back to pending status?')) {
+                console.log('Reconsidering application:', id);
+                updateApplicationStatus(id, 'pending');
+                showToast('Application moved back to pending', 'warning');
+            }
+        }
+
+        function approveFromModal() {
+            if (currentApplicationId) {
+                approveApplication(currentApplicationId);
+                bootstrap.Modal.getInstance(document.getElementById('applicationModal')).hide();
+            }
+        }
+
+        function rejectFromModal() {
+            if (currentApplicationId) {
+                rejectApplication(currentApplicationId);
+                bootstrap.Modal.getInstance(document.getElementById('applicationModal')).hide();
+            }
+        }
+
+        // Utility functions
+        function updateApplicationStatus(id, newStatus) {
+            const card = document.querySelector(`[data-status] .card-body h5:contains('${sampleApplications[id]?.firstName}')`);
+            if (card) {
+                const applicationCard = card.closest('.application-card');
+                applicationCard.className = `card application-card ${newStatus} mb-3`;
+                applicationCard.dataset.status = newStatus;
+                
+                const badge = applicationCard.querySelector('.badge');
+                badge.className = `badge bg-${getStatusColor(newStatus)}`;
+                badge.textContent = newStatus === 'under-review' ? 'Under Review' : 
+                                  newStatus.charAt(0).toUpperCase() + newStatus.slice(1);
+            }
+            
+            // Update sample data
+            if (sampleApplications[id]) {
+                sampleApplications[id].status = newStatus;
+            }
+            
+            updateStats();
+        }
+
+        function getStatusColor(status) {
+            const colors = {
+                'pending': 'warning',
+                'under-review': 'info',
+                'approved': 'success',
+                'rejected': 'danger'
+            };
+            return colors[status] || 'secondary';
+        }
+
+        function updateStats() {
+            const stats = {
+                pending: 0,
+                'under-review': 0,
+                approved: 0,
+                rejected: 0
+            };
+
+            document.querySelectorAll('.application-card').forEach(card => {
+                const status = card.dataset.status;
+                if (stats.hasOwnProperty(status)) {
+                    stats[status]++;
+                }
+            });
+
+            document.getElementById('pendingCount').textContent = stats.pending;
+            document.getElementById('reviewCount').textContent = stats['under-review'];
+            document.getElementById('approvedCount').textContent = stats.approved;
+            document.getElementById('rejectedCount').textContent = stats.rejected;
+        }
+
+        function showToast(message, type = 'success') {
+            // Create toast element
+            const toast = document.createElement('div');
+            toast.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            toast.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Quick actions
+        function bulkApprove() {
+            const pendingCards = document.querySelectorAll('.application-card[data-status="pending"]');
+            if (pendingCards.length === 0) {
+                showToast('No pending applications to approve', 'info');
+                return;
+            }
+            
+            if (confirm(`Approve all ${pendingCards.length} pending applications?`)) {
+                pendingCards.forEach(card => {
+                    const nameElement = card.querySelector('h5');
+                    if (nameElement) {
+                        // Find the application ID (in a real app, this would be in a data attribute)
+                        const name = nameElement.textContent;
+                        for (const [id, app] of Object.entries(sampleApplications)) {
+                            if (`${app.firstName} ${app.lastName}` === name && app.status === 'Pending') {
+                                updateApplicationStatus(id, 'approved');
+                                break;
+                            }
+                        }
+                    }
+                });
+                showToast(`${pendingCards.length} applications approved!`, 'success');
+            }
+        }
+
+        function exportData() {
+            // Create CSV data
+            const csvData = Object.values(sampleApplications).map(app => ({
+                'Application ID': app.id,
+                'Name': `${app.firstName} ${app.lastName}`,
+                'Email': app.email,
+                'Phone': app.phoneNumber,
+                'Expertise': app.expertise,
+                'Status': app.status,
+                'Application Date': app.applicationDate
+            }));
+
+            // Convert to CSV
+            const headers = Object.keys(csvData[0]);
+            const csvContent = [
+                headers.join(','),
+                ...csvData.map(row => headers.map(header => `"${row[header]}"`).join(','))
+            ].join('\n');
+
+            // Download file
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `instructor-applications-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            showToast('Application data exported successfully!', 'success');
+        }
+
+        function sendReminder() {
+            showToast('Reminder emails sent to all applicants', 'info');
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                // In real implementation, handle logout
+                window.location.href = '/';
+            }
+        }
+
+        // Helper function to find elements by text content
+        HTMLElement.prototype.contains = function(text) {
+            return this.textContent.includes(text);
+        };
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            updateStats();
+            
+            // Check admin access (in real implementation)
+            checkAdminAccess();
+        });
+
+        async function checkAdminAccess() {
+            try {
+                // In real implementation, check if user is admin
+                console.log('Checking admin access...');
+                
+                // Simulate API call
+                const isAdmin = true; // This would come from your auth system
+                
+                if (!isAdmin) {
+                    document.body.innerHTML = `
+                        <div class="container mt-5 text-center">
+                            <i class="bi bi-shield-exclamation display-1 text-danger mb-3"></i>
+                            <h2>Access Denied</h2>
+                            <p class="text-muted">You don't have administrator privileges.</p>
+                            <a href="/" class="btn btn-primary">Go Home</a>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error checking admin access:', error);
+            }
+        }
+
+        // Real-time updates simulation
+        setInterval(() => {
+            // In real implementation, this would poll for new applications
+            // For demo purposes, we'll just update timestamps
+        }, 30000);
+    </script>
+</body>
+</html>

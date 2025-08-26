@@ -1,0 +1,136 @@
+@page
+@model CoursePLatform.Pages.LogoutModel
+@{
+    ViewData["Title"] = "Logout";
+}
+
+<style>
+    body {
+        background: linear-gradient(135deg, #f6f9fc, #eef2f7);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .logout-card {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(12px);
+        border-radius: 20px;
+        padding: 2.5rem 2rem;
+        box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .logout-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .logout-icon {
+        font-size: 4rem;
+        color: #667eea;
+        animation: bounce 1s infinite alternate, sparkle 2s infinite;
+        margin-bottom: 1rem;
+        position: relative;
+    }
+
+    @@keyframes bounce {
+        from { transform: translateY(0); }
+        to { transform: translateY(-10px); }
+    }
+
+    @@keyframes sparkle {
+        0%, 100% { text-shadow: 0 0 2px #fff, 0 0 4px #667eea, 0 0 6px #764ba2; }
+        50% { text-shadow: 0 0 4px #fff, 0 0 8px #667eea, 0 0 12px #764ba2; }
+    }
+
+    .logout-card h3 {
+        font-weight: 700;
+        color: #4a4a6a;
+        margin-bottom: 0.5rem;
+    }
+
+    .logout-card p {
+        color: #555;
+        margin-bottom: 1.5rem;
+    }
+
+    .btn-gradient {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: #fff;
+        font-weight: 600;
+        border-radius: 50px;
+        padding: 0.75rem 1.5rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-gradient:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 18px rgba(102, 126, 234, 0.6), 0 0 20px rgba(118, 75, 162, 0.7);
+        filter: brightness(1.1);
+        color: #fff;
+    }
+
+    canvas#confetti-canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        pointer-events: none;
+        width: 100%;
+        height: 100%;
+        z-index: 10;
+    }
+</style>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="logout-card text-center">
+                <canvas id="confetti-canvas"></canvas>
+                <div class="logout-icon">
+                    <i class="bi bi-box-arrow-right"></i>
+                </div>
+                <h3>You have been logged out successfully!</h3>
+                <p>Thank you for using TongueSpace.</p>
+                <a asp-page="/Index" class="btn btn-gradient">Return to Home</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+<!-- Confetti JS -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<script>
+    const canvas = document.getElementById('confetti-canvas');
+    const myConfetti = confetti.create(canvas, {
+        resize: true,
+        useWorker: true
+    });
+
+    // Fire small confetti for 1 second
+    const duration = 1000;
+    const end = Date.now() + duration;
+
+    (function frame() {
+        myConfetti({
+            particleCount: 5 + Math.random() * 5,
+            angle: 60,
+            spread: 55,
+            origin: { x: Math.random(), y: Math.random() * 0.6 }
+        });
+        myConfetti({
+            particleCount: 5 + Math.random() * 5,
+            angle: 120,
+            spread: 55,
+            origin: { x: Math.random(), y: Math.random() * 0.6 }
+        });
+
+        if (Date.now() < end) {
+            requestAnimationFrame(frame);
+        }
+    })();
+</script>

@@ -1,0 +1,384 @@
+@* Pages/InstructorDashboard.cshtml *@
+@page "/instructor-dashboard"
+@model CoursePLatform.Pages.InstructorDashboardModel
+@{
+    ViewData["Title"] = "Instructor Dashboard - TongueSpace";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Instructor Dashboard</h2>
+            <p class="text-muted">Create and manage your courses</p>
+        </div>
+        <!-- Only show Create New Course button for approved instructors -->
+        <a href="/teach/create-course" class="btn btn-primary btn-lg" id="createCourseBtn" style="display: none;">
+            <i class="bi bi-plus-circle me-2"></i>Create New Course
+        </a>
+    </div>
+
+    <div id="loadingSpinner" class="text-center py-5">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading your dashboard...</p>
+    </div>
+
+    <div id="accessDenied" class="text-center py-5" style="display: none;">
+        <i class="bi bi-mortarboard display-4 text-muted mb-3"></i>
+        <h4>Instructor Access Required</h4>
+        <p class="text-muted">You need to apply and be approved as an instructor to access this page.</p>
+        <a href="/apply-instructor" class="btn btn-primary me-2">Apply to Become Instructor</a>
+        <a href="/" class="btn btn-outline-secondary">Go Home</a>
+    </div>
+
+    <!-- New: Application Rejected Message -->
+    <div id="applicationRejected" class="text-center py-5" style="display: none;">
+        <i class="bi bi-x-circle display-4 text-danger mb-3"></i>
+        <h4>Application Not Approved</h4>
+        <p class="text-muted">Your instructor application was not approved. You cannot access the instructor dashboard at this time.</p>
+        <div class="alert alert-info mt-3" role="alert">
+            <strong>What can you do?</strong>
+            <ul class="mb-0 text-start">
+                <li>Contact support if you believe this is an error</li>
+                <li>Submit a new application with improved qualifications</li>
+                <li>Continue learning as a student on our platform</li>
+            </ul>
+        </div>
+        <div class="mt-3">
+            <a href="/contact" class="btn btn-outline-primary me-2">Contact Support</a>
+            <a href="/" class="btn btn-secondary">Go Home</a>
+        </div>
+    </div>
+
+    <!-- New: Application Pending Message -->
+    <div id="applicationPending" class="text-center py-5" style="display: none;">
+        <i class="bi bi-clock-history display-4 text-warning mb-3"></i>
+        <h4>Application Under Review</h4>
+        <p class="text-muted">Your instructor application is still being reviewed. Please wait for approval before accessing the instructor dashboard.</p>
+        <div class="alert alert-info mt-3" role="alert">
+            <strong>Current Status:</strong> <span id="pendingStatusText">Under Review</span><br>
+            <strong>Applied on:</strong> <span id="pendingApplicationDate">-</span>
+        </div>
+        <div class="mt-3">
+            <a href="/apply-instructor" class="btn btn-outline-primary me-2">Check Application Status</a>
+            <a href="/" class="btn btn-secondary">Go Home</a>
+        </div>
+    </div>
+
+    <div id="dashboardContent" style="display: none;">
+        <!-- Stats Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-book display-4 me-3"></i>
+                            <div>
+                                <h4 class="mb-0" id="totalCourses">0</h4>
+                                <small>Total Courses</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-people display-4 me-3"></i>
+                            <div>
+                                <h4 class="mb-0" id="totalStudents">0</h4>
+                                <small>Total Students</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-currency-dollar display-4 me-3"></i>
+                            <div>
+                                <h4 class="mb-0" id="totalEarnings">$0</h4>
+                                <small>Total Earnings</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-star display-4 me-3"></i>
+                            <div>
+                                <h4 class="mb-0" id="avgRating">0.0</h4>
+                                <small>Avg. Rating</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <a href="/teach/create-course" class="btn btn-outline-primary w-100 p-3" id="quickCreateCourse">
+                            <i class="bi bi-plus-circle display-6 d-block mb-2"></i>
+                            <strong>Create Course</strong><br>
+                            <small class="text-muted">Start building your next course</small>
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <a href="#" class="btn btn-outline-success w-100 p-3">
+                            <i class="bi bi-chat-dots display-6 d-block mb-2"></i>
+                            <strong>Messages</strong><br>
+                            <small class="text-muted">Communicate with students</small>
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <a href="#" class="btn btn-outline-info w-100 p-3">
+                            <i class="bi bi-graph-up display-6 d-block mb-2"></i>
+                            <strong>Analytics</strong><br>
+                            <small class="text-muted">View performance insights</small>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- My Courses -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">My Courses</h5>
+                <a href="/teach/create-course" class="btn btn-primary btn-sm" id="newCourseBtn">
+                    <i class="bi bi-plus me-1"></i>New Course
+                </a>
+            </div>
+            <div class="card-body">
+                <div id="coursesList">
+                    <div class="text-center py-4">
+                        <i class="bi bi-book display-4 text-muted mb-3"></i>
+                        <h5>No courses yet</h5>
+                        <p class="text-muted">Create your first course to get started!</p>
+                        <a href="/teach/create-course" class="btn btn-primary" id="firstCourseBtn">
+                            <i class="bi bi-plus-circle me-2"></i>Create Your First Course
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    await checkInstructorAccess();
+});
+
+async function checkInstructorAccess() {
+    try {
+        // Check if user is authenticated
+        const authResponse = await fetch('/api/user/check-auth', { 
+            credentials: 'same-origin' 
+        });
+        
+        if (!authResponse.ok || !(await authResponse.json()).isAuthenticated) {
+            // Not logged in
+            showAccessDenied();
+            return;
+        }
+
+        // FIXED: Check instructor application status first
+        const applicationResponse = await fetch('/api/instructor-application/status', { 
+            credentials: 'same-origin' 
+        });
+
+        if (applicationResponse.ok) {
+            const applicationData = await applicationResponse.json();
+            
+            if (!applicationData.hasApplication) {
+                // No application submitted
+                showAccessDenied();
+                return;
+            }
+
+            // Check application status
+            switch (applicationData.status) {
+                case 'Rejected':
+                    showApplicationRejected();
+                    return;
+                    
+                case 'Pending':
+                case 'UnderReview':
+                    showApplicationPending(applicationData);
+                    return;
+                    
+                case 'Approved':
+                    // Continue to check user role
+                    break;
+                    
+                default:
+                    // Unknown status, treat as pending
+                    showApplicationPending(applicationData);
+                    return;
+            }
+        }
+
+        // Check if user role is instructor (only after application is approved)
+        const profileResponse = await fetch('/api/user/profile', {
+            credentials: 'same-origin'
+        });
+        
+        if (profileResponse.ok) {
+            const userData = await profileResponse.json();
+            
+            if (userData.role === 'Instructor' || userData.role === 'Admin') {
+                // User is approved instructor, show dashboard with course creation
+                showDashboard(true);
+                await loadInstructorData();
+            } else {
+                // User role is not instructor (shouldn't happen if application is approved)
+                showAccessDenied();
+            }
+        } else {
+            throw new Error('Failed to load user profile');
+        }
+    } catch (error) {
+        console.error('Error checking instructor access:', error);
+        showAccessDenied();
+    }
+}
+
+function showAccessDenied() {
+    document.getElementById('loadingSpinner').style.display = 'none';
+    document.getElementById('accessDenied').style.display = 'block';
+}
+
+function showApplicationRejected() {
+    document.getElementById('loadingSpinner').style.display = 'none';
+    document.getElementById('applicationRejected').style.display = 'block';
+    // Hide all course creation buttons for rejected applications
+    hideCourseCreationButtons();
+}
+
+function showApplicationPending(applicationData) {
+    document.getElementById('loadingSpinner').style.display = 'none';
+    document.getElementById('applicationPending').style.display = 'block';
+    
+    // Update pending status details
+    const statusText = applicationData.status === 'UnderReview' ? 'Under Review' : applicationData.status;
+    document.getElementById('pendingStatusText').textContent = statusText;
+    
+    if (applicationData.applicationDate) {
+        document.getElementById('pendingApplicationDate').textContent = 
+            new Date(applicationData.applicationDate).toLocaleDateString();
+    }
+    
+    // Hide all course creation buttons for pending applications
+    hideCourseCreationButtons();
+}
+
+function showDashboard(showCourseCreation = false) {
+    document.getElementById('loadingSpinner').style.display = 'none';
+    document.getElementById('dashboardContent').style.display = 'block';
+    
+    if (showCourseCreation) {
+        showCourseCreationButtons();
+    } else {
+        hideCourseCreationButtons();
+    }
+}
+
+function hideCourseCreationButtons() {
+    // Hide the main Create New Course button
+    const createCourseBtn = document.getElementById('createCourseBtn');
+    if (createCourseBtn) createCourseBtn.style.display = 'none';
+    
+    // Hide quick action create course button
+    const quickCreateCourse = document.getElementById('quickCreateCourse');
+    if (quickCreateCourse) quickCreateCourse.style.display = 'none';
+    
+    // Hide new course button in courses section
+    const newCourseBtn = document.getElementById('newCourseBtn');
+    if (newCourseBtn) newCourseBtn.style.display = 'none';
+    
+    // Hide first course button
+    const firstCourseBtn = document.getElementById('firstCourseBtn');
+    if (firstCourseBtn) firstCourseBtn.style.display = 'none';
+}
+
+function showCourseCreationButtons() {
+    // Show the main Create New Course button
+    const createCourseBtn = document.getElementById('createCourseBtn');
+    if (createCourseBtn) createCourseBtn.style.display = 'block';
+    
+    // Show quick action create course button
+    const quickCreateCourse = document.getElementById('quickCreateCourse');
+    if (quickCreateCourse) quickCreateCourse.style.display = 'block';
+    
+    // Show new course button in courses section
+    const newCourseBtn = document.getElementById('newCourseBtn');
+    if (newCourseBtn) newCourseBtn.style.display = 'inline-block';
+    
+    // Show first course button
+    const firstCourseBtn = document.getElementById('firstCourseBtn');
+    if (firstCourseBtn) firstCourseBtn.style.display = 'inline-block';
+}
+
+async function loadInstructorData() {
+    try {
+        // For now, we'll show placeholder data
+        // In a real app, you'd load actual course data from API
+        
+        document.getElementById('totalCourses').textContent = '0';
+        document.getElementById('totalStudents').textContent = '0';
+        document.getElementById('totalEarnings').textContent = '$0';
+        document.getElementById('avgRating').textContent = '0.0';
+        
+        console.log('Instructor dashboard loaded successfully');
+        
+    } catch (error) {
+        console.error('Error loading instructor data:', error);
+    }
+}
+</script>
+}
+
+<style>
+.display-6 {
+    font-size: 3rem;
+}
+
+.card {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.btn-outline-primary:hover,
+.btn-outline-success:hover,
+.btn-outline-info:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.btn-outline-primary,
+.btn-outline-success,
+.btn-outline-info {
+    transition: all 0.3s ease;
+}
+
+.alert ul {
+    padding-left: 1.5rem;
+}
+</style>

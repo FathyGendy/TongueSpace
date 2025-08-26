@@ -1,0 +1,781 @@
+@page
+@model CoursePLatform.Pages.CoursesModel
+@{
+    ViewData["Title"] = "Course Catalog - TongueSpace";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="text-center mb-5">
+                <div class="mb-3">
+                    <h1 class="display-3 mb-2" style="background: linear-gradient(45deg, #667eea, #9b59b6, #f093fb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: bold; letter-spacing: 2px;">
+                        TongueSpace
+                    </h1>
+                </div>
+                <p class="lead text-muted">Explore • Learn • Connect</p>
+                <p class="text-muted">Master any language in our global learning space</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="successAlert" class="alert alert-success alert-dismissible fade" role="alert" style="display: none;">
+        <i class="bi bi-check-circle-fill"></i>
+        <span id="successMessage"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <select class="form-select" id="languageFilter">
+                <option value="">All Languages</option>
+                <option value="Arabic">Arabic</option>
+                <option value="English">English</option>
+                <option value="German">German</option>
+                <option value="French">French</option>
+                <option value="Spanish">Spanish</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <select class="form-select" id="levelFilter">
+                <option value="">All Levels</option>
+                <option value="Beginner">Beginner</option>
+                <option value="Intermediate">Intermediate</option>
+                <option value="Advanced">Advanced</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <input type="text" class="form-control" id="searchInput" placeholder="Search courses...">
+        </div>
+    </div>
+
+    <div id="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading courses...</p>
+    </div>
+
+    <div id="coursesGrid" class="row g-4" style="display: none;">
+    </div>
+
+    <div id="noCoursesMessage" class="text-center py-5" style="display: none;">
+        <i class="bi bi-search display-4 text-muted"></i>
+        <h4 class="mt-3">No courses found</h4>
+        <p class="text-muted">Try adjusting your filters or search terms.</p>
+    </div>
+</div>
+
+<div class="modal fade" id="loginRequiredModal" tabindex="-1" aria-labelledby="loginRequiredModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="loginRequiredModalLabel">Sign In Required</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center">
+                    <i class="bi bi-person-lock display-4 text-primary mb-3"></i>
+                    <h6>Account Required</h6>
+                    <p class="text-muted">You need to sign in or create an account to access course content and practice exercises.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <a href="/Login" class="btn btn-primary">
+                    <i class="bi bi-box-arrow-in-right"></i> Sign In
+                </a>
+                <a href="/Register" class="btn btn-outline-primary">
+                    <i class="bi bi-person-plus"></i> Create Account
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="enrollmentStatusModal" tabindex="-1" aria-labelledby="enrollmentStatusModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="enrollmentStatusModalLabel">Course Enrollment Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="enrollmentStatusModalBody">
+            </div>
+            <div class="modal-footer" id="enrollmentStatusModalFooter">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+class CourseCatalog {
+    constructor() {
+        this.allCourses = [];
+        this.filteredCourses = [];
+        this.isAuthenticated = false;
+        this.init();
+    }
+
+    async init() {
+        await this.checkAuthenticationStatus();
+        await this.loadCourses();
+        this.setupEventListeners();
+        // Check all enrollment statuses once courses are loaded
+        if (this.isAuthenticated) {
+            this.checkEnrollmentStatuses();
+        }
+    }
+
+    async checkAuthenticationStatus() {
+        try {
+            const response = await fetch('/api/auth/status', {
+                credentials: 'same-origin'
+            });
+            if (response.ok) {
+                const status = await response.json();
+                this.isAuthenticated = status.isAuthenticated;
+            } else {
+                this.isAuthenticated = false;
+            }
+        } catch (error) {
+            console.error('Error checking authentication status:', error);
+            this.isAuthenticated = false;
+        }
+    }
+
+    async loadCourses() {
+        try {
+            const response = await fetch('/api/courses');
+            if (response.ok) {
+                this.allCourses = await response.json();
+                this.filteredCourses = [...this.allCourses];
+                this.renderCourses();
+            } else {
+                this.showError('Failed to load courses');
+            }
+        } catch (error) {
+            console.error('Error loading courses:', error);
+            this.showError('Error loading courses');
+        } finally {
+            document.getElementById('loading').style.display = 'none';
+        }
+    }
+
+    setupEventListeners() {
+        document.getElementById('languageFilter').addEventListener('change', () => this.applyFilters());
+        document.getElementById('levelFilter').addEventListener('change', () => this.applyFilters());
+        document.getElementById('searchInput').addEventListener('input', () => this.applyFilters());
+    }
+
+    applyFilters() {
+        const languageFilter = document.getElementById('languageFilter').value;
+        const levelFilter = document.getElementById('levelFilter').value;
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+        this.filteredCourses = this.allCourses.filter(course => {
+            const matchesLanguage = !languageFilter || course.language === languageFilter;
+            const matchesLevel = !levelFilter || course.level === levelFilter;
+            const matchesSearch = !searchTerm ||
+                course.title.toLowerCase().includes(searchTerm) ||
+                course.description.toLowerCase().includes(searchTerm) ||
+                course.instructorName.toLowerCase().includes(searchTerm);
+
+            return matchesLanguage && matchesLevel && matchesSearch;
+        });
+
+        this.renderCourses();
+    }
+
+    renderCourses() {
+        const grid = document.getElementById('coursesGrid');
+        const noCoursesMessage = document.getElementById('noCoursesMessage');
+
+        if (this.filteredCourses.length === 0) {
+            grid.style.display = 'none';
+            noCoursesMessage.style.display = 'block';
+            return;
+        }
+
+        noCoursesMessage.style.display = 'none';
+        grid.style.display = 'flex';
+
+        grid.innerHTML = this.filteredCourses.map(course => this.createCourseCard(course)).join('');
+
+        // Set up initial button handlers for non-authenticated users
+        if (!this.isAuthenticated) {
+            this.filteredCourses.forEach(course => {
+                const btn = document.getElementById(`enroll-btn-${course.id}`);
+                if (btn) {
+                    btn.onclick = () => this.showLoginRequiredModal();
+                }
+            });
+        }
+
+        // Re-check statuses after rendering to ensure buttons are correct
+        if (this.isAuthenticated) {
+            this.checkEnrollmentStatuses();
+        }
+    }
+
+    createCourseCard(course) {
+        const levelBadgeColor = {
+            'Beginner': 'success',
+            'Intermediate': 'warning',
+            'Advanced': 'danger'
+        };
+
+        const languageFlags = {
+            'Arabic': '🇸🇦',
+            'English': '🇺🇸',
+            'German': '🇩🇪',
+            'French': '🇫🇷',
+            'Spanish': '🇪🇸'
+        };
+
+        // Create image content with proper fallback handling
+        let imageContent = this.createImageContent(course);
+
+        return `
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm course-card">
+                    <div class="image-container">
+                        ${imageContent}
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge bg-${levelBadgeColor[course.level] || 'primary'}">${course.level}</span>
+                            <span class="text-muted">${languageFlags[course.language] || '🌍'} ${course.language}</span>
+                        </div>
+                        <h5 class="card-title">${course.title}</h5>
+                        <p class="card-text text-muted small flex-grow-1">${course.description}</p>
+                        <div class="course-meta mt-auto">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <small class="text-muted">
+                                    <i class="bi bi-person"></i> ${course.instructorName}
+                                </small>
+                                <small class="text-muted">
+                                    <i class="bi bi-play-circle"></i> ${course.lessonCount} lessons
+                                </small>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="h5 text-primary mb-0">$${course.price}</span>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-outline-primary btn-sm" onclick="courseCatalog.viewCourse(${course.id})">
+                                        View Details
+                                    </button>
+                                    <button class="btn btn-outline-success btn-sm" onclick="courseCatalog.accessPractice(${course.id})">
+                                        <i class="bi bi-puzzle"></i> Practice
+                                    </button>
+                                    <button class="btn btn-primary btn-sm enrollment-btn"
+                                        id="enroll-btn-${course.id}"
+                                        data-course-id="${course.id}"
+                                        data-enrollment-status="loading"
+                                        onclick="${this.isAuthenticated ? '' : 'courseCatalog.showLoginRequiredModal()'}">
+                                        <span class="btn-text">${this.isAuthenticated ? 'Checking Status...' : 'Enroll Now'}</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    createImageContent(course) {
+        // Language-specific gradients as fallbacks
+        const gradientClasses = {
+            'Arabic': 'gradient-arabic',
+            'German': 'gradient-german',
+            'English': 'gradient-english',
+            'Spanish': 'gradient-spanish',
+            'French': 'gradient-french'
+        };
+
+        const overlayTexts = {
+            'Arabic': 'تَعَلَّمِ اللُّغَةَ العَرَبِيَّةَ',
+            'German': 'Deutsch lernen',
+            'English': 'Learn English',
+            'Spanish': 'Aprende Español',
+            'French': 'Apprenez le Français'
+        };
+
+        // Course-specific image assignments (Arabic removed to use overlay)
+        const courseImages = {
+            'Business English Communication': 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=400&h=200&fit=crop',
+            'German Grammar Mastery': 'https://images.unsplash.com/photo-1527866959252-deab85ef7d1b?w=400&h=200&fit=crop',
+            'Spanish for Travelers': 'https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=400&h=200&fit=crop'
+        };
+
+        // Special case for French - always use animated gradient
+        if (course.language === 'French') {
+            return `
+                <div class="french-gradient">
+                    ${overlayTexts[course.language]}
+                </div>
+            `;
+        }
+
+        // Special case for Arabic - always use overlay with background image
+        if (course.language === 'Arabic') {
+            const imageUrl = course.thumbnailUrl || 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=200&fit=crop';
+            return `
+                <div class="arabic-image-overlay" style="background-image: url('${imageUrl}');">
+                    <div class="arabic-overlay-text">
+                        ${overlayTexts[course.language]}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Check for course-specific images first, then thumbnailUrl
+        const imageUrl = courseImages[course.title] || course.thumbnailUrl;
+
+        // For other languages, check if we have a valid external URL
+        if (imageUrl && 
+            imageUrl.trim() && 
+            imageUrl !== 'null' && 
+            (imageUrl.startsWith('http://') || imageUrl.startsWith('https://'))) {
+            
+            return `
+                <img src="${imageUrl}" 
+                     class="card-img-top course-image" 
+                     alt="${course.title}"
+                     style="height: 200px; object-fit: cover;"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="course-gradient ${gradientClasses[course.language] || 'gradient-default'}" style="display: none;">
+                    <div class="gradient-text">
+                        ${overlayTexts[course.language] || course.title}
+                    </div>
+                </div>
+            `;
+        } else {
+            // No valid external URL, use gradient directly
+            return `
+                <div class="course-gradient ${gradientClasses[course.language] || 'gradient-default'}">
+                    <div class="gradient-text">
+                        ${overlayTexts[course.language] || course.title}
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    viewCourse(courseId) {
+        if (!this.isAuthenticated) {
+            this.showLoginRequiredModal();
+            return;
+        }
+        
+        window.location.href = `/course/${courseId}`;
+    }
+
+    accessPractice(courseId) {
+        if (!this.isAuthenticated) {
+            this.showLoginRequiredModal();
+            return;
+        }
+        
+        window.location.href = `/course/${courseId}/exercises`;
+    }
+
+    showError(message) {
+        document.getElementById('loading').innerHTML = `
+            <div class="alert alert-danger" role="alert">
+                <i class="bi bi-exclamation-triangle"></i> ${message}
+            </div>
+        `;
+    }
+
+    showSuccessMessage(message) {
+        const successAlert = document.getElementById('successAlert');
+        const successMessage = document.getElementById('successMessage');
+        successMessage.textContent = message;
+        successAlert.style.display = 'block';
+        successAlert.classList.add('show');
+        
+        setTimeout(() => {
+            successAlert.classList.remove('show');
+            setTimeout(() => {
+                successAlert.style.display = 'none';
+            }, 150);
+        }, 5000);
+    }
+
+    async checkEnrollmentStatuses() {
+        for (const course of this.allCourses) {
+            const btn = document.getElementById(`enroll-btn-${course.id}`);
+            if (btn) {
+                try {
+                    const response = await fetch(`${window.location.origin}/api/enrollment/status/${course.id}`, {
+                        credentials: 'same-origin'
+                    });
+                    if (response.ok) {
+                        const status = await response.json();
+                        this.updateEnrollmentButton(course.id, status);
+                    } else if (response.status === 401) {
+                        this.updateEnrollmentButton(course.id, { needsLogin: true });
+                    } else {
+                        this.updateEnrollmentButton(course.id, { needsLogin: true });
+                    }
+                } catch (error) {
+                    console.error('Error checking enrollment status:', error);
+                    this.updateEnrollmentButton(course.id, { needsLogin: true });
+                }
+            }
+        }
+    }
+
+    updateEnrollmentButton(courseId, status) {
+        const btn = document.getElementById(`enroll-btn-${courseId}`);
+        if (!btn) return;
+
+        const btnText = btn.querySelector('.btn-text');
+        
+        btn.className = 'btn btn-sm enrollment-btn';
+        btn.onclick = null;
+
+        if (!this.isAuthenticated || status.needsLogin || status.NeedsLogin) {
+            btn.classList.add('btn-primary');
+            btnText.innerHTML = 'Enroll Now';
+            btn.onclick = () => this.showLoginRequiredModal();
+        } else if (status.isEnrolled || status.IsEnrolled) {
+            btn.classList.add('btn-success');
+            btnText.innerHTML = '<i class="bi bi-check-circle"></i> Enrolled';
+            btn.onclick = () => this.showEnrollmentStatus(courseId, status);
+        } else {
+            btn.classList.add('btn-primary');
+            btnText.innerHTML = '<i class="bi bi-plus-circle"></i> Enroll Now';
+            btn.onclick = () => this.enrollInCourse(courseId);
+        }
+    }
+
+    showLoginRequiredModal() {
+        const modal = new bootstrap.Modal(document.getElementById('loginRequiredModal'));
+        modal.show();
+    }
+
+    showEnrollmentStatus(courseId, status) {
+        const modal = document.getElementById('enrollmentStatusModal');
+        const modalBody = document.getElementById('enrollmentStatusModalBody');
+        const modalFooter = document.getElementById('enrollmentStatusModalFooter');
+        
+        const course = this.allCourses.find(c => c.id === courseId);
+        const enrolledDate = new Date(status.enrolledAt || status.EnrolledAt).toLocaleDateString();
+        const progress = status.progressPercentage || status.ProgressPercentage || 0;
+
+        modalBody.innerHTML = `
+            <div class="text-center">
+                <i class="bi bi-check-circle-fill display-4 text-success mb-3"></i>
+                <h6>You are enrolled in this course!</h6>
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <h6 class="card-title">${course?.title || 'Course'}</h6>
+                        <p class="text-muted mb-2">Enrolled on: ${enrolledDate}</p>
+                        <div class="progress mb-2" style="height: 20px;">
+                            <div class="progress-bar bg-success" role="progressbar" 
+                                style="width: ${progress}%" 
+                                aria-valuenow="${progress}" 
+                                aria-valuemin="0" 
+                                aria-valuemax="100">
+                                ${progress}%
+                            </div>
+                        </div>
+                        <p class="small text-muted">Course Progress</p>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const bootstrapModal = new bootstrap.Modal(modal);
+        bootstrapModal.show();
+    }
+
+    async enrollInCourse(courseId) {
+        const btn = document.getElementById(`enroll-btn-${courseId}`);
+        const btnText = btn.querySelector('.btn-text');
+        
+        const originalText = btnText.innerHTML;
+        btnText.textContent = 'Enrolling...';
+        btn.disabled = true;
+
+        try {
+            const response = await fetch(`${window.location.origin}/api/enrollment/enroll/${courseId}`, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                this.showSuccessMessage(result.message || 'Successfully enrolled in the course!');
+                this.updateEnrollmentButton(courseId, { isEnrolled: true, progressPercentage: 0 });
+            } else if (response.status === 401) {
+                this.showLoginRequiredModal();
+            } else {
+                const errorData = await response.json().catch(() => ({ message: 'Failed to enroll' }));
+                alert(errorData.message || 'Failed to enroll in the course');
+            }
+        } catch (error) {
+            console.error('Error enrolling in course:', error);
+            alert('Error enrolling in course. Please try again.');
+        } finally {
+            btn.disabled = false;
+        }
+    }
+}
+
+let courseCatalog;
+
+document.addEventListener('DOMContentLoaded', () => {
+    courseCatalog = new CourseCatalog();
+});
+</script>
+
+<style>
+.course-card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.course-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+}
+
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+.course-meta {
+    font-size: 0.875rem;
+}
+
+.card-img-top, .course-image {
+    transition: transform 0.3s ease;
+}
+
+.course-card:hover .course-image {
+    transform: scale(1.05);
+}
+
+.form-select, .form-control {
+    border-radius: 8px;
+}
+
+.btn {
+    border-radius: 6px;
+}
+
+.badge {
+    font-size: 0.75rem;
+}
+
+.image-container {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+}
+
+/* Course gradients */
+.course-gradient {
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.3rem;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+    text-align: center;
+}
+
+.gradient-text {
+    padding: 20px;
+    text-align: center;
+    line-height: 1.2;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.gradient-arabic {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+}
+
+.gradient-arabic .gradient-text {
+    font-family: 'Arial Unicode MS', 'Tahoma', sans-serif;
+    font-size: 1.5rem;
+    letter-spacing: 2px;
+    text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
+}
+
+.gradient-german {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.gradient-english {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.gradient-spanish {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+.gradient-french {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+.gradient-default {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Special French animated gradient */
+.french-gradient {
+    height: 200px;
+    background: linear-gradient(270deg, #667eea, #9b59b6, #f093fb);
+    background-size: 600% 600%;
+    animation: gradientShift 8s ease infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.3rem;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    text-align: center;
+    padding: 20px;
+}
+
+@@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Arabic image overlay with text */
+.arabic-image-overlay {
+    height: 200px;
+    background: 
+        radial-gradient(circle at 30% 40%, rgba(255,255,255,0.03) 1px, transparent 1px),
+        radial-gradient(circle at 70% 80%, rgba(255,255,255,0.02) 1px, transparent 1px),
+        radial-gradient(circle at 20% 90%, rgba(255,255,255,0.01) 2px, transparent 2px),
+        linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 25%, #1f1f1f 50%, #333333 75%, #262626 100%),
+        repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 2px,
+            rgba(255,255,255,0.008) 2px,
+            rgba(255,255,255,0.008) 4px
+        );
+    background-size: 
+        400px 400px,
+        300px 300px,
+        200px 200px,
+        cover,
+        20px 20px;
+    background-position: 
+        0 0,
+        100px 100px,
+        200px 50px,
+        center,
+        0 0;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 0 100px rgba(0,0,0,0.5);
+}
+
+.arabic-image-overlay::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 1px,
+            rgba(0,0,0,0.1) 1px,
+            rgba(0,0,0,0.1) 2px
+        ),
+        repeating-linear-gradient(
+            90deg,
+            transparent,
+            transparent 1px,
+            rgba(0,0,0,0.05) 1px,
+            rgba(0,0,0,0.05) 2px
+        );
+    opacity: 0.6;
+    z-index: 1;
+}
+
+.arabic-overlay-text {
+    position: relative;
+    z-index: 2;
+    color: #f0f0f0;
+    font-family: 'Amiri', 'Arial Unicode MS', 'Tahoma', sans-serif;
+    font-size: 1.5rem; /* Reduced from 2rem */
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-shadow: 
+        2px 2px 4px rgba(0, 0, 0, 0.8),
+        0 0 10px rgba(0, 0, 0, 0.5);
+    text-align: center;
+    padding: 20px;
+    line-height: 1.3;
+    direction: rtl;
+    unicode-bidi: bidi-override;
+}
+
+.course-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.enrollment-btn {
+    min-width: 100px;
+}
+
+.alert {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1050;
+    min-width: 300px;
+    max-width: 500px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.progress {
+    border-radius: 10px;
+}
+
+.progress-bar {
+    border-radius: 10px;
+}
+
+/* Responsive adjustments */
+@@media (max-width: 768px) {
+    .gradient-text, .french-gradient {
+        font-size: 1.1rem;
+        padding: 15px;
+    }
+    
+    .gradient-arabic .gradient-text {
+        font-size: 1.2rem;
+    }
+    
+    .arabic-overlay-text {
+        font-size: 1.2rem; /* Reduced from 1.5rem for mobile */
+        padding: 15px;
+        letter-spacing: 0.5px;
+    }
+}
+</style>

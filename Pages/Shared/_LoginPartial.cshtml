@@ -1,0 +1,39 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using CoursePLatform.Models
+
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+<ul class="navbar-nav">
+@if (SignInManager.IsSignedIn(User))
+{
+    var user = UserManager.GetUserAsync(User).Result;
+    var userName = user?.FirstName ?? "User";
+    
+    <li class="nav-item">
+        <a class="nav-link text-dark" asp-page="/Dashboard">
+            <i class="bi bi-speedometer2 me-1"></i>Dashboard
+        </a>
+    </li>
+    <li class="nav-item">
+        <span class="nav-link text-dark">Hello @userName!</span>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-dark" asp-page="/Logout">Logout</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-dark" href="/instructor-dashboard">
+            <i class="bi bi-mortarboard me-1"></i>Teach
+        </a>
+    </li>
+}
+else
+{
+    <li class="nav-item">
+        <a class="nav-link text-dark" asp-page="/Register">Register</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-dark" asp-page="/Login">Login</a>
+    </li>
+}
+</ul>

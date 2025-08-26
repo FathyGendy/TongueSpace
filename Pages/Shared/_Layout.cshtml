@@ -1,0 +1,180 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - CoursePLatform</title>
+
+    <link rel="icon" type="image/svg+xml" href="~/favicon.svg">
+    <link rel="icon" type="image/png" href="~/favicon.png">
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/CoursePLatform.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container">
+                <a class="navbar-brand d-flex align-items-center" asp-area="" asp-page="/Index">
+                    <svg width="220" height="60" viewBox="0 0 220 60" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color:#764ba2;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#f093fb;stop-opacity:1" />
+                            </linearGradient>
+                            <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" style="stop-color:#2c3e50;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color:#3498db;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#9b59b6;stop-opacity:1" />
+                            </linearGradient>
+                            <radialGradient id="spaceGlow" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.3" />
+                                <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0" />
+                            </radialGradient>
+                        </defs>
+
+                        <g transform="translate(8, 8)">
+                            <circle cx="22" cy="22" r="18" fill="url(#logoGradient)" stroke="#fff" stroke-width="2"/>
+                            <circle cx="22" cy="22" r="18" fill="url(#spaceGlow)"/>
+                            <path d="M 15 35 L 22 28 L 20 40 Z" fill="url(#logoGradient)" stroke="#fff" stroke-width="1"/>
+                            <text x="22" y="18" text-anchor="middle" fill="white" font-size="9" font-weight="bold" opacity="0.9">T</text>
+                            <text x="16" y="26" text-anchor="middle" fill="white" font-size="7" font-weight="bold" opacity="0.8">语</text>
+                            <text x="28" y="26" text-anchor="middle" fill="white" font-size="7" font-weight="bold" opacity="0.8">ا</text>
+
+                            <circle cx="35" cy="15" r="4" fill="#3498db" opacity="0.7">
+                                <animateTransform attributeName="transform" type="rotate"
+                                    values="0 22 22;360 22 22" dur="10s" repeatCount="indefinite"/>
+                            </circle>
+                            <text x="35" y="18" text-anchor="middle" fill="white" font-size="5" font-weight="bold" opacity="0.9">
+                                <animateTransform attributeName="transform" type="rotate"
+                                    values="0 22 22;360 22 22" dur="10s" repeatCount="indefinite"/>
+                                Fr
+                            </text>
+
+                            <circle cx="9" cy="15" r="3" fill="#e74c3c" opacity="0.7">
+                                <animateTransform attributeName="transform" type="rotate"
+                                    values="0 22 22;-360 22 22" dur="15s" repeatCount="indefinite"/>
+                            </circle>
+                            <text x="9" y="17" text-anchor="middle" fill="white" font-size="4" font-weight="bold" opacity="0.9">
+                                <animateTransform attributeName="transform" type="rotate"
+                                    values="0 22 22;-360 22 22" dur="15s" repeatCount="indefinite"/>
+                                Es
+                            </text>
+
+                            <circle cx="5" cy="8" r="1" fill="white" opacity="0.6"/>
+                            <circle cx="38" cy="10" r="1" fill="white" opacity="0.5"/>
+                            <circle cx="8" cy="35" r="1" fill="white" opacity="0.7"/>
+                            <circle cx="36" cy="32" r="1" fill="white" opacity="0.4"/>
+                        </g>
+
+                        <text x="55" y="28" fill="url(#textGradient)" font-size="20" font-weight="bold" font-family="Arial, sans-serif" letter-spacing="1px">
+                            Tongue<tspan fill="#9b59b6">Space</tspan>
+                        </text>
+                        <text x="55" y="42" fill="#7f8c8d" font-size="9" font-family="Arial, sans-serif" letter-spacing="0.5px">
+                            EXPLORE • LEARN • CONNECT
+                        </text>
+
+                        <g opacity="0.3">
+                            <line x1="190" y1="15" x2="200" y2="20" stroke="#3498db" stroke-width="1"/>
+                            <line x1="200" y1="20" x2="195" y2="30" stroke="#9b59b6" stroke-width="1"/>
+                            <line x1="195" y1="30" x2="205" y2="35" stroke="#e74c3c" stroke-width="1"/>
+                            <circle cx="190" cy="15" r="2" fill="#3498db"/>
+                            <circle cx="200" cy="20" r="2" fill="#9b59b6"/>
+                            <circle cx="195" cy="30" r="2" fill="#e74c3c"/>
+                            <circle cx="205" cy="35" r="2" fill="#f39c12"/>
+                        </g>
+                    </svg>
+                </a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-page="/Index">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-page="/Courses">Courses</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-page="/Contact">Contact</a>
+                        </li>
+                        
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" href="/admin">
+                                    <i class="bi bi-shield-check me-1"></i>Admin Panel
+                                </a>
+                            </li>
+                        }
+
+                        @if (User.Identity != null && User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-page="/Profile">Profile</a>
+                            </li>
+                            @if (User.IsInRole("Instructor"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-primary fw-bold" asp-area="" asp-page="/InstructorDashboard">
+                                        <i class="bi bi-speedometer2 me-1"></i>Instructor Dashboard
+                                    </a>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-success fw-bold" href="/apply-instructor">
+                                        <i class="bi bi-mortarboard me-1"></i>Become an Instructor
+                                    </a>
+                                </li>
+                            }
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-success fw-bold" href="/apply-instructor">
+                                    <i class="bi bi-mortarboard me-1"></i>Teach on TongueSpace
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                    
+                    <button class="theme-toggle me-2" type="button">
+                        <i class="bi bi-moon-fill me-1"></i>Dark Mode
+                    </button>
+                    <partial name="_LoginPartial" />
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2025 - CoursePLatform. This website was made by <span style="color: #3498db;">Fathy Gendy</span>.
+            All rights are reserved. - <a asp-area="" asp-page="/Privacy">Privacy</a>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

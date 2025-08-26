@@ -1,0 +1,936 @@
+@page
+@model CoursePLatform.Pages.ProfileModel
+@{
+    ViewData["Title"] = "Profile - TongueSpace";
+}
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        min-height: 100vh;
+        color: #1e293b;
+    }
+
+    .profile-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 32px 20px;
+        animation: fadeIn 0.8s ease-out;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .header {
+        text-align: center;
+        margin-bottom: 48px;
+        position: relative;
+    }
+
+    .header h1 {
+        font-size: 3.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 50%, #c084fc 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 12px;
+        letter-spacing: -0.02em;
+    }
+
+    .header .subtitle {
+        font-size: 1.125rem;
+        color: #64748b;
+        font-weight: 400;
+        max-width: 600px;
+        margin: 0 auto;
+        line-height: 1.6;
+    }
+
+    .profile-content {
+        display: grid;
+        grid-template-columns: 350px 1fr;
+        gap: 32px;
+    }
+
+    .profile-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .profile-card {
+        background: white;
+        border-radius: 20px;
+        padding: 32px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(148, 163, 184, 0.1);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .profile-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #8b5cf6, #a855f7, #c084fc);
+    }
+
+    .profile-picture-section {
+        text-align: center;
+        margin-bottom: 24px;
+    }
+
+    .avatar-container {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 20px;
+    }
+
+    .avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid #e2e8f0;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        transition: all 0.3s ease;
+    }
+
+    .avatar:hover {
+        transform: scale(1.05);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16);
+        border-color: #a855f7;
+    }
+
+    .upload-btn {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        background: #8b5cf6;
+        border: none;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+    }
+
+    .upload-btn:hover {
+        background: #7c3aed;
+        transform: scale(1.1);
+    }
+
+    .user-info h3 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 4px;
+    }
+
+    .user-role {
+        display: inline-flex;
+        align-items: center;
+        background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+        color: #8b5cf6;
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        margin-bottom: 20px;
+    }
+
+    .education-quote {
+        background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+        border: 1px solid #e9d5ff;
+        border-radius: 16px;
+        padding: 24px;
+        text-align: left;
+        position: relative;
+        margin-top: 20px;
+    }
+
+    .quote-icon {
+        position: absolute;
+        top: 16px;
+        left: 16px;
+        font-size: 2rem;
+        opacity: 0.3;
+        color: #8b5cf6;
+    }
+
+    .quote-text {
+        font-size: 0.95rem;
+        font-style: italic;
+        color: #6b46c1;
+        line-height: 1.6;
+        margin-bottom: 12px;
+        padding-left: 40px;
+    }
+
+    .quote-author {
+        font-size: 0.8rem;
+        color: #8b5cf6;
+        font-weight: 600;
+        padding-left: 40px;
+    }
+
+    .main-content {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(148, 163, 184, 0.1);
+        overflow: hidden;
+    }
+
+    .tabs {
+        display: flex;
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .tab {
+        flex: 1;
+        padding: 20px 24px;
+        background: none;
+        border: none;
+        font-size: 1rem;
+        font-weight: 500;
+        color: #64748b;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .tab.active {
+        color: #8b5cf6;
+        background: white;
+    }
+
+    .tab.active::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #8b5cf6, #a855f7);
+    }
+
+    .tab:hover:not(.active) {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .tab-content {
+        display: none;
+        padding: 32px;
+    }
+
+    .tab-content.active {
+        display: block;
+        animation: slideIn 0.4s ease-out;
+    }
+
+    @@keyframes slideIn {
+        from { 
+            opacity: 0; 
+            transform: translateY(10px); 
+        }
+        to { 
+            opacity: 1; 
+            transform: translateY(0); 
+        }
+    }
+
+    .section-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 32px;
+        position: relative;
+        padding-bottom: 12px;
+    }
+
+    .section-title::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 60px;
+        height: 3px;
+        background: linear-gradient(90deg, #8b5cf6, #a855f7);
+        border-radius: 2px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        margin-bottom: 24px;
+    }
+
+    .form-group {
+        margin-bottom: 24px;
+    }
+
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: #fafafa;
+        color: #1e293b;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #8b5cf6;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+    }
+
+    .form-textarea {
+        min-height: 120px;
+        resize: vertical;
+        font-family: inherit;
+    }
+
+    .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 12px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+    }
+
+    .btn:hover::before {
+        left: 100%;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+        color: white;
+        box-shadow: 0 4px 14px rgba(139, 92, 246, 0.3);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-secondary {
+        background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+        color: white;
+        box-shadow: 0 4px 14px rgba(100, 116, 139, 0.3);
+    }
+
+    .btn-secondary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(100, 116, 139, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-danger {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+        box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-danger:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 16px;
+        margin-top: 32px;
+        padding-top: 24px;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .account-status {
+        background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+        border: 1px solid #a7f3d0;
+        border-radius: 12px;
+        padding: 16px 20px;
+        color: #065f46;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .member-since {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 16px 20px;
+        color: #475569;
+        font-weight: 500;
+    }
+
+    .danger-zone {
+        background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+        border: 1px solid #fecaca;
+        border-radius: 16px;
+        padding: 24px;
+        margin-top: 32px;
+    }
+
+    .danger-zone h3 {
+        color: #dc2626;
+        margin-bottom: 12px;
+        font-size: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .danger-zone p {
+        color: #7f1d1d;
+        margin-bottom: 20px;
+        line-height: 1.6;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.75);
+        backdrop-filter: blur(8px);
+        z-index: 1000;
+        animation: modalFadeIn 0.3s ease;
+    }
+
+    @@keyframes modalFadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .modal-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        border-radius: 20px;
+        padding: 32px;
+        max-width: 480px;
+        width: 90%;
+        text-align: center;
+        animation: modalSlideIn 0.3s ease;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    @@keyframes modalSlideIn {
+        from { 
+            transform: translate(-50%, -50%) scale(0.9); 
+            opacity: 0; 
+        }
+        to { 
+            transform: translate(-50%, -50%) scale(1); 
+            opacity: 1; 
+        }
+    }
+    
+    .modal-actions {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+        margin-top: 24px;
+    }
+
+    .alert {
+        padding: 16px 20px;
+        border-radius: 12px;
+        margin-bottom: 24px;
+        border: 1px solid transparent;
+        transition: all 0.3s ease-out;
+    }
+
+    .alert-info {
+        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        color: #1e40af;
+        border-color: #93c5fd;
+    }
+
+    .alert-success {
+        background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+        color: #065f46;
+        border-color: #6ee7b7;
+    }
+
+    .alert-danger {
+        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+        color: #7f1d1d;
+        border-color: #fca5a5;
+    }
+
+    .text-danger {
+        color: #dc2626;
+        font-size: 0.875rem;
+        margin-top: 6px;
+    }
+
+    .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+    }
+
+    .col-md-6 {
+        /* Grid handles the layout */
+    }
+
+    @@media (max-width: 768px) {
+        .profile-container {
+            padding: 20px 16px;
+        }
+
+        .profile-content {
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+        }
+
+        .form-grid,
+        .row {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .tabs {
+            overflow-x: auto;
+        }
+
+        .tab {
+            flex: none;
+            min-width: 140px;
+        }
+
+        .modal-content {
+            width: 95%;
+            padding: 24px;
+        }
+    }
+</style>
+
+<div class="profile-container">
+    <div class="header">
+        <h1>My Profile</h1>
+        <p class="subtitle">Manage your account, track your progress, and customize your learning experience</p>
+    </div>
+
+    <div class="profile-content">
+        <!-- Left Sidebar -->
+        <div class="profile-sidebar">
+            <div class="profile-card">
+                <form method="post" asp-page-handler="UpdateProfilePicture" enctype="multipart/form-data" id="profilePictureForm">
+                    <div class="profile-picture-section">
+                        <div class="avatar-container">
+                            <img src="@Model.ProfilePictureUrl" alt="Profile Picture" class="avatar" id="profilePicture">
+                            <button type="button" class="upload-btn" onclick="document.getElementById('profilePictureInput').click()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z" />
+                                    <circle cx="12" cy="13" r="3" />
+                                </svg>
+                            </button>
+                        </div>
+                        <input asp-for="ProfilePicture" type="file" id="profilePictureInput" accept="image/*" style="display: none;" onchange="handleProfilePictureChange(this)">
+                        
+                        <div class="user-info">
+                            <h3 id="displayName">@(Model.FirstName) @(Model.LastName)</h3>
+                            <div class="user-role">@(Model.Role)</div>
+                        </div>
+
+                        <div id="picture-actions" style="display: none; margin-top: 20px;">
+                            <button type="submit" class="btn btn-primary">Save Photo</button>
+                            <button type="button" class="btn btn-secondary" onclick="cancelProfilePictureChange()">Cancel</button>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="education-quote">
+                    <div class="quote-icon">"</div>
+                    <div class="quote-text">
+                        "Education is the most powerful weapon which you can use to change the world. The beautiful thing about learning is that no one can take it away from you."
+                    </div>
+                    <div class="quote-author">
+                        — Nelson Mandela & B.B. King
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('personal')">Personal Info</button>
+                <button class="tab" onclick="showTab('account')">Account</button>
+            </div>
+
+            <!-- Personal Info Tab -->
+            <div id="personal" class="tab-content active">
+                <h2 class="section-title">Personal Information</h2>
+
+                @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+                {
+                    <div class="alert alert-success">
+                        @Model.SuccessMessage
+                    </div>
+                }
+
+                @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                {
+                    <div class="alert alert-danger">
+                        @Model.ErrorMessage
+                    </div>
+                }
+
+                <form method="post" asp-page-handler="UpdatePersonalInfo">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="Input.FirstName" class="form-label">First Name</label>
+                                <input asp-for="Input.FirstName" class="form-control" />
+                                <span asp-validation-for="Input.FirstName" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="Input.LastName" class="form-label">Last Name</label>
+                                <input asp-for="Input.LastName" class="form-control" />
+                                <span asp-validation-for="Input.LastName" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Input.Email" class="form-label">Email Address</label>
+                        <input asp-for="Input.Email" class="form-control" />
+                        <span asp-validation-for="Input.Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="Input.PhoneNumber" class="form-label">Phone Number</label>
+                                <input asp-for="Input.PhoneNumber" class="form-control" />
+                                <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="Input.Location" class="form-label">Location</label>
+                                <input asp-for="Input.Location" class="form-control" />
+                                <span asp-validation-for="Input.Location" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Input.Bio" class="form-label">Bio</label>
+                        <textarea asp-for="Input.Bio" class="form-control form-textarea" placeholder="Tell us about yourself..."></textarea>
+                        <span asp-validation-for="Input.Bio" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Account Tab -->
+            <div id="account" class="tab-content">
+                <h2 class="section-title">Account Management</h2>
+                
+                <div class="form-group">
+                    <label class="form-label">Account Status</label>
+                    <div class="account-status">
+                        <span>✅</span>
+                        <span>Active @Model.Role Account</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Member Since</label>
+                    <div class="member-since">
+                        @Model.MemberSince?.ToString("MMMM dd, yyyy")
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <a asp-page-handler="ExportData" class="btn btn-secondary">Export My Data</a>
+                </div>
+
+                <div class="danger-zone">
+                    <h3><span>⚠️</span> Danger Zone</h3>
+                    <p>Once you delete your account, there is no going back. Please be certain.</p>
+                    <button type="button" class="btn btn-danger" onclick="showDeleteModal()">Delete Account</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Modal for Delete Account -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <h3 style="color: #dc2626; margin-bottom: 20px;">Delete Account</h3>
+        <p style="margin-bottom: 30px; color: #6b7280; line-height: 1.6;">
+            Are you absolutely sure you want to delete your account? This action cannot be undone and will permanently remove all your data, progress, and certificates.
+        </p>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" onclick="hideDeleteModal()">Cancel</button>
+            <form method="post" asp-page-handler="DeleteAccount">
+                <button type="submit" class="btn btn-danger">Yes, Delete My Account</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Modal for Alerts -->
+<div id="alertModal" class="modal">
+    <div class="modal-content">
+        <h3 id="alertTitle" style="margin-bottom: 20px;"></h3>
+        <p id="alertMessage" style="margin-bottom: 30px; color: #6b7280; line-height: 1.6;"></p>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-primary" onclick="hideAlertModal()">OK</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Tab functionality
+    function showTab(tabName) {
+        // Hide all tab contents
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+
+        // Remove active class from all tabs
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+
+        // Show selected tab content
+        document.getElementById(tabName).classList.add('active');
+
+        // Add active class to clicked tab
+        event.target.classList.add('active');
+    }
+    
+    // Define the placeholder image URL
+    const placeholderUrl = "https://placehold.co/150x150/8B5CF6/FFFFFF?text=P";
+
+    // Profile picture upload
+    function handleProfilePictureChange(input) {
+        const file = input.files[0];
+        const pictureActions = document.getElementById('picture-actions');
+        const profilePicture = document.getElementById('profilePicture');
+        
+        // Hide any previous message
+        hideAlertModal();
+
+        if (file) {
+            // Validate file type
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+            if (!allowedTypes.includes(file.type)) {
+                showAlert('Invalid File Type', 'Please select a valid image file (JPEG, PNG, or GIF).');
+                input.value = ''; // Clear the input
+                return;
+            }
+
+            // Validate file size (max 5MB)
+            const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+            if (file.size > maxSize) {
+                showAlert('File Too Large', 'File size must be less than 5MB.');
+                input.value = ''; // Clear the input
+                return;
+            }
+
+            // Show preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                profilePicture.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+            
+            // Show the save/cancel buttons
+            pictureActions.style.display = 'flex';
+        } else {
+            // If no file is selected, revert and hide buttons
+            profilePicture.src = '@(string.IsNullOrEmpty(Model.ProfilePictureUrl) ? "https://placehold.co/150x150/8B5CF6/FFFFFF?text=P" : Model.ProfilePictureUrl)';
+            pictureActions.style.display = 'none';
+        }
+    }
+
+    function cancelProfilePictureChange() {
+        const profilePicture = document.getElementById('profilePicture');
+        const profilePictureInput = document.getElementById('profilePictureInput');
+        const pictureActions = document.getElementById('picture-actions');
+        
+        // Reset the image to its original source or placeholder if none exists
+        profilePicture.src = '@(string.IsNullOrEmpty(Model.ProfilePictureUrl) ? "https://placehold.co/150x150/8B5CF6/FFFFFF?text=P" : Model.ProfilePictureUrl)';
+        
+        // Clear the file input
+        profilePictureInput.value = '';
+        
+        // Hide the buttons
+        pictureActions.style.display = 'none';
+    }
+
+    // Custom modal functions
+    function showAlert(title, message) {
+        const modal = document.getElementById('alertModal');
+        document.getElementById('alertTitle').textContent = title;
+        document.getElementById('alertMessage').textContent = message;
+        modal.style.display = 'block';
+    }
+
+    function hideAlertModal() {
+        document.getElementById('alertModal').style.display = 'none';
+    }
+    
+    function showDeleteModal() {
+        document.getElementById('deleteModal').style.display = 'block';
+    }
+
+    function hideDeleteModal() {
+        document.getElementById('deleteModal').style.display = 'none';
+    }
+
+    // Close modals when clicking outside
+    window.addEventListener('click', function(event) {
+        const deleteModal = document.getElementById('deleteModal');
+        const alertModal = document.getElementById('alertModal');
+
+        if (event.target === deleteModal) {
+            hideDeleteModal();
+        }
+        if (event.target === alertModal) {
+            hideAlertModal();
+        }
+    });
+
+    // Close modals with Escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            hideDeleteModal();
+            hideAlertModal();
+        }
+    });
+
+    // Auto-hide alerts after 5 seconds
+    document.addEventListener('DOMContentLoaded', function() {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            setTimeout(() => {
+                alert.style.opacity = '0';
+                setTimeout(() => {
+                    alert.style.display = 'none';
+                }, 300);
+            }, 5000);
+        });
+    });
+
+    // Form submission loading states
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function() {
+            const submitButton = this.querySelector('button[type="submit"]');
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.textContent = 'Processing...';
+            }
+        });
+    });
+
+    // Update display name when form changes
+    document.addEventListener('input', function(event) {
+        if (event.target.matches('#Input_FirstName, #Input_LastName')) {
+            const firstName = document.querySelector('#Input_FirstName').value || 'User';
+            const lastName = document.querySelector('#Input_LastName').value || '';
+            document.getElementById('displayName').textContent = `${firstName} ${lastName}`.trim();
+        }
+    });
+</script>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

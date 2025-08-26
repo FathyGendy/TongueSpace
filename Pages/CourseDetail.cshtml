@@ -1,0 +1,728 @@
+@page "/course/{id:int}"
+@model CoursePLatform.Pages.CourseDetailModel
+@{
+    ViewData["Title"] = "Course Details - TongueSpace";
+}
+
+<div class="container mt-4">
+    <div id="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading course...</span>
+        </div>
+        <p class="mt-2">Loading course details...</p>
+    </div>
+
+    <div id="courseContent" style="display: none;">
+        <div class="course-header mb-4">
+            <div class="row">
+                <div class="col-lg-8">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="/">Home</a></li>
+                            <li class="breadcrumb-item"><a href="/Courses">Courses</a></li>
+                            <li class="breadcrumb-item active" aria-current="page" id="courseTitleBreadcrumb">Course</li>
+                        </ol>
+                    </nav>
+                    
+                    <div class="course-title-section">
+                        <div class="language-flag mb-2" id="courseFlag">🌍</div>
+                        <h1 class="course-title mb-3" id="courseTitle">Loading...</h1>
+                        <p class="course-description text-muted mb-3" id="courseDescription">Loading description...</p>
+                        
+                        <div class="course-meta d-flex flex-wrap gap-3 mb-3">
+                            <div class="meta-item">
+                                <i class="bi bi-person text-primary"></i>
+                                <span id="instructorName">Loading...</span>
+                            </div>
+                            <div class="meta-item">
+                                <i class="bi bi-play-circle text-primary"></i>
+                                <span id="lessonCount">0</span> lessons
+                            </div>
+                            <div class="meta-item">
+                                <i class="bi bi-clock text-primary"></i>
+                                <span id="totalDuration">0</span> minutes
+                            </div>
+                            <div class="meta-item">
+                                <span class="badge" id="levelBadge">Beginner</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="course-action-card card shadow">
+                        <div class="card-body text-center">
+                            <div class="course-price mb-3">
+                                <span class="price-label text-muted">Price:</span>
+                                <span class="price h3 text-primary" id="coursePrice">$0.00</span>
+                            </div>
+                            
+                            <div id="enrollmentSection">
+                                <a href="/course/@Model.CourseId/exercises" class="btn btn-outline-success w-100 mb-2">
+                                    <i class="bi bi-puzzle me-2"></i>Practice Exercises
+                                </a>
+                                <button class="btn btn-primary btn-lg w-100 mb-3" id="enrollmentBtn">
+                                    <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                    <span class="btn-text">Check Status...</span>
+                                </button>
+                                
+                                <div id="progressSection" class="d-none">
+                                    <div class="progress mb-2">
+                                        <div class="progress-bar" id="progressBar" role="progressbar" style="width: 0%"></div>
+                                    </div>
+                                    <small class="text-muted" id="progressText">0% Complete</small>
+                                </div>
+                            </div>
+                            
+                            <div class="course-stats mt-3">
+                                <div class="row text-center">
+                                    <div class="col-4">
+                                        <div class="stat-number" id="enrolledStudents">0</div>
+                                        <div class="stat-label">Students</div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="stat-number" id="courseRating">4.8</div>
+                                        <div class="stat-label">Rating</div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="stat-number" id="completionRate">95%</div>
+                                        <div class="stat-label">Success</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="course-content-tabs">
+            <ul class="nav nav-tabs" id="courseTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="lessons-tab" data-bs-toggle="tab" data-bs-target="#lessons" type="button" role="tab">
+                        <i class="bi bi-play-circle me-2"></i>Lessons
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab">
+                        <i class="bi bi-info-circle me-2"></i>Overview
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="instructor-tab" data-bs-toggle="tab" data-bs-target="#instructor" type="button" role="tab">
+                        <i class="bi bi-person me-2"></i>Instructor
+                    </button>
+                </li>
+            </ul>
+            
+            <div class="tab-content mt-4" id="courseTabContent">
+                <div class="tab-pane fade show active" id="lessons" role="tabpanel">
+                    <div class="lessons-container">
+                        <div class="lessons-header mb-3">
+                            <h4>Course Lessons</h4>
+                            <p class="text-muted">Click on a lesson to start learning</p>
+                        </div>
+                        
+                        <div id="lessonsList" class="lessons-list">
+                            </div>
+                    </div>
+                </div>
+                
+                <div class="tab-pane fade" id="overview" role="tabpanel">
+                    <div class="course-overview">
+                        <h4>What you'll learn</h4>
+                        <div class="learning-outcomes mb-4">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <ul class="list-unstyled">
+                                        <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Master fundamental grammar rules</li>
+                                        <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Build essential vocabulary</li>
+                                        <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Improve pronunciation skills</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="list-unstyled">
+                                        <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Practice conversational skills</li>
+                                        <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Cultural understanding</li>
+                                        <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Real-world application</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h4>Course Requirements</h4>
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="bi bi-dot text-primary"></i>No prior experience required</li>
+                            <li class="mb-2"><i class="bi bi-dot text-primary"></i>Access to internet and device</li>
+                            <li class="mb-2"><i class="bi bi-dot text-primary"></i>Dedication to practice regularly</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="tab-pane fade" id="instructor" role="tabpanel">
+                    <div class="instructor-info">
+                        <div class="instructor-profile d-flex align-items-center mb-4">
+                            <div class="instructor-avatar me-3">
+                                <div class="avatar-circle">
+                                    <i class="bi bi-person-fill"></i>
+                                </div>
+                            </div>
+                            <div class="instructor-details">
+                                <h4 id="instructorFullName">Loading...</h4>
+                                <p class="text-muted mb-1">Language Expert & Native Speaker</p>
+                                <div class="instructor-stats">
+                                    <span class="badge bg-primary me-2">⭐ 4.9 Rating</span>
+                                    <span class="badge bg-secondary me-2">👥 1,200+ Students</span>
+                                    <span class="badge bg-success">📚 15+ Courses</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="instructor-bio">
+                            <h5>About the Instructor</h5>
+                            <p>Our expert instructor brings years of teaching experience and native language expertise to help you achieve your learning goals. With a passion for education and cultural exchange, they make learning engaging and effective.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="lessonModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="lessonModalTitle">Lesson Title</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="lessonContent">
+                        <p id="lessonDescription">Loading lesson content...</p>
+                        <div id="lessonVideoSection" class="mb-4">
+                            <div class="video-container">
+                                <iframe id="lessonVideoPlayer" 
+                                        width="100%" 
+                                        height="400" 
+                                        src="" 
+                                        title="YouTube video player" 
+                                        frameborder="0" 
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                                        allowfullscreen>
+                                </iframe>
+                            </div>
+                        </div>
+                        <div id="lessonTextContent" class="mt-3">
+                            </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <a href="/course/@Model.CourseId/exercises" class="btn btn-outline-success">
+                        <i class="bi bi-puzzle"></i> Practice Exercises
+                    </a>
+                    <button type="button" class="btn btn-success" id="markCompleteBtn">
+                        <i class="bi bi-check-circle me-2"></i>Mark as Complete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+class CourseDetailManager {
+    constructor() {
+        this.courseId = @Model.CourseId;
+        this.courseData = null;
+        this.enrollmentStatus = null;
+        this.currentLesson = null;
+        this.videoMappings = this.initializeVideoMappings();
+        this.init();
+    }
+
+    initializeVideoMappings() {
+        return {
+            // Advanced English Writing Course
+            'Advanced English Writing': {
+                'Essay Structure': 'https://youtu.be/Drv6jD8xWdw?si=KpqnR_CTXUSfWHsc',
+                'Research and Citations': 'https://youtu.be/VIy4A3zmljA?si=FOm1voiIaY2cE9vJ'
+            },
+            // Spanish for Travelers Course
+            'Spanish for Travelers': {
+                'Airport and Transportation': 'https://youtu.be/7iXFSyaMr_g?si=7sALHysZT8xsPNTS',
+                'Hotel Check-in': 'https://youtu.be/a1wUYeFRMHc?si=4nUMtGW0vwJpo0nU'
+            },
+            // French Conversation Practice Course
+            'French Conversation Practice': {
+                'Café Conversations': 'https://youtu.be/MBK7K1Xw3Lc?si=7Sd8k5V2ZzAA-Vgr',
+                'Shopping Dialogues': 'https://youtu.be/9MPp8XzC4rA?si=bjjWfsxGRfcQ_buU'
+            },
+            // Business English Communication Course
+            'Business English Communication': {
+                'Professional Email Writing': 'https://youtu.be/3Tu1jN65slw?si=7ErTm2JsG_cFgFJK',
+                'Meeting Vocabulary': 'https://youtu.be/PLhAzAymMsY?si=j-TFcNs3_HUZS2eC',
+                'Presentation Skills': 'https://youtu.be/pLzOA36qLQ0?si=HJ9WjIM3rYMhdomB'
+            },
+            // German Grammar Mastery Course
+            'German Grammar Mastery': {
+                'German Cases Overview': 'https://youtu.be/bZL5OB61XXM?si=HdQlcC1JRlUAUqSA',
+                'Der, Die, Das - Articles': 'https://youtu.be/fYZP95y2mgM?si=_5Rj7KVi4tVLdCNv',
+                'Verb Conjugations': 'https://youtu.be/0LRs_M_BtsI?si=IDJXrHrJvCqeiwhe'
+            },
+            // Arabic for Beginners Course
+            'Learn Arabic for Beginners': {
+                'Arabic Alphabet - Part 1': 'https://youtu.be/NYQU0_KgWD8?si=q0eM7aW8AJZGTsmB',
+                'Arabic Alphabet - Part 2': 'https://youtu.be/mZnUOs1lyCs?si=ozfIoL0NV2kbg9fU',
+                'Basic Greetings': 'https://youtu.be/hEApCv1bIeg?si=W6wNDvPhRwM9BYCN',
+                'Numbers 1-20': 'https://youtu.be/R4OdbmZebdA?si=mQvjF23cenGI_Ads'
+            }
+        };
+    }
+
+    async init() {
+        await this.loadCourseData();
+        await this.checkEnrollmentStatus();
+        this.setupEventListeners();
+    }
+
+    async loadCourseData() {
+        try {
+            const response = await fetch(`${window.location.origin}/api/courses/${this.courseId}`);
+            if (response.ok) {
+                this.courseData = await response.json();
+                this.renderCourseData();
+                this.renderLessons();
+            } else {
+                this.showError('Course not found');
+            }
+        } catch (error) {
+            console.error('Error loading course:', error);
+            this.showError('Error loading course data');
+        } finally {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('courseContent').style.display = 'block';
+        }
+    }
+
+    renderCourseData() {
+        const course = this.courseData;
+        const languageFlags = {
+            'Arabic': '🇸🇦',
+            'English': '🇺🇸',
+            'German': '🇩🇪',
+            'French': '🇫🇷',
+            'Spanish': '🇪🇸'
+        };
+
+        const levelColors = {
+            'Beginner': 'success',
+            'Intermediate': 'warning',
+            'Advanced': 'danger'
+        };
+
+        // Update course information
+        document.getElementById('courseTitleBreadcrumb').textContent = course.title;
+        document.getElementById('courseFlag').textContent = languageFlags[course.language] || '🌍';
+        document.getElementById('courseTitle').textContent = course.title;
+        document.getElementById('courseDescription').textContent = course.description;
+        document.getElementById('instructorName').textContent = course.instructorName;
+        document.getElementById('instructorFullName').textContent = course.instructorName;
+        document.getElementById('lessonCount').textContent = course.lessons.length;
+        document.getElementById('coursePrice').textContent = `$${course.price}`;
+        
+        const levelBadge = document.getElementById('levelBadge');
+        levelBadge.textContent = course.level;
+        levelBadge.className = `badge bg-${levelColors[course.level] || 'primary'}`;
+
+        // Calculate total duration
+        const totalDuration = course.lessons.reduce((sum, lesson) => sum + lesson.durationMinutes, 0);
+        document.getElementById('totalDuration').textContent = totalDuration;
+
+        // Update page title
+        document.title = `${course.title} - TongueSpace`;
+    }
+
+    renderLessons() {
+        const lessonsContainer = document.getElementById('lessonsList');
+        const lessons = this.courseData.lessons.sort((a, b) => a.orderIndex - b.orderIndex);
+
+        lessonsContainer.innerHTML = lessons.map((lesson, index) => {
+            const hasVideo = this.getVideoUrl(lesson.title);
+            return `
+                <div class="lesson-item card mb-3" data-lesson-id="${lesson.id}">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="lesson-number me-3">
+                                <div class="lesson-circle">
+                                    ${index + 1}
+                                </div>
+                            </div>
+                            <div class="lesson-info flex-grow-1">
+                                <h6 class="lesson-title mb-1">${lesson.title}</h6>
+                                <p class="lesson-description text-muted mb-1">${lesson.description}</p>
+                                <small class="text-muted">
+                                    <i class="bi bi-clock me-1"></i>${lesson.durationMinutes} minutes
+                                    ${hasVideo ? '<i class="bi bi-play-circle ms-2 me-1 text-success"></i>Video included' : ''}
+                                </small>
+                            </div>
+                            <div class="lesson-actions">
+                                <button class="btn btn-outline-primary btn-sm" onclick="courseManager.openLesson(${lesson.id})">
+                                    <i class="bi bi-play-circle me-1"></i>Start
+                                </button>
+                                <div class="lesson-status ms-2 d-none">
+                                    <i class="bi bi-check-circle text-success"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    getVideoUrl(lessonTitle) {
+        const courseTitle = this.courseData?.title;
+        if (!courseTitle || !this.videoMappings[courseTitle]) return null;
+        
+        const videoUrl = this.videoMappings[courseTitle][lessonTitle];
+        return videoUrl;
+    }
+
+    convertYouTubeUrlToEmbed(url) {
+        if (!url) return null;
+        
+        // Extract video ID from various YouTube URL formats
+        const regexes = [
+            /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=|embed\/|v\/)?([a-zA-Z0-9_-]{11})/,
+            /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})/,
+            /(?:https?:\/\/)?(?:www\.)?youtu\.be\/([a-zA-Z0-9_-]{11})/
+        ];
+        
+        for (const regex of regexes) {
+            const match = url.match(regex);
+            if (match && match[1]) {
+                return `https://www.youtube.com/embed/${match[1]}`;
+            }
+        }
+        
+        return null;
+    }
+
+    async checkEnrollmentStatus() {
+        try {
+            const response = await fetch(`${window.location.origin}/api/enrollment/status/${this.courseId}`);
+            if (response.ok) {
+                this.enrollmentStatus = await response.json();
+                this.updateEnrollmentUI();
+            } else if (response.status === 401) {
+                this.updateEnrollmentUI({ needsLogin: true });
+            } else {
+                this.updateEnrollmentUI({ canEnroll: true });
+            }
+        } catch (error) {
+            console.error('Error checking enrollment:', error);
+            this.updateEnrollmentUI({ canEnroll: true });
+        }
+    }
+
+    updateEnrollmentUI(status = null) {
+        status = status || this.enrollmentStatus;
+        const btn = document.getElementById('enrollmentBtn');
+        const btnText = btn.querySelector('.btn-text');
+        const progressSection = document.getElementById('progressSection');
+
+        if (status.needsLogin) {
+            btn.className = 'btn btn-outline-secondary btn-lg w-100 mb-3';
+            btnText.textContent = 'Login to Enroll';
+            btn.onclick = () => window.location.href = '/Login';
+        } else if (status.isEnrolled) {
+            btn.className = 'btn btn-success btn-lg w-100 mb-3';
+            btnText.innerHTML = '<i class="bi bi-check-circle me-2"></i>Enrolled';
+            
+            if (status.progressPercentage > 0) {
+                progressSection.classList.remove('d-none');
+                const progressBar = document.getElementById('progressBar');
+                const progressText = document.getElementById('progressText');
+                progressBar.style.width = `${status.progressPercentage}%`;
+                progressText.textContent = `${Math.round(status.progressPercentage)}% Complete`;
+            }
+        } else if (status.canEnroll) {
+            btn.className = 'btn btn-primary btn-lg w-100 mb-3';
+            btnText.innerHTML = '<i class="bi bi-plus-circle me-2"></i>Enroll Now';
+            btn.onclick = () => this.enrollInCourse();
+        } else {
+            btn.className = 'btn btn-secondary btn-lg w-100 mb-3';
+            btnText.textContent = 'Unavailable';
+            btn.disabled = true;
+        }
+    }
+
+    async enrollInCourse() {
+        const btn = document.getElementById('enrollmentBtn');
+        const btnText = btn.querySelector('.btn-text');
+        const spinner = btn.querySelector('.spinner-border');
+
+        spinner.classList.remove('d-none');
+        btnText.textContent = 'Enrolling...';
+        btn.disabled = true;
+
+        try {
+            const response = await fetch(`${window.location.origin}/api/enrollment/enroll/${this.courseId}`, {
+                method: 'POST',
+                credentials: 'same-origin'
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                alert(result.message);
+                await this.checkEnrollmentStatus();
+            } else {
+                const error = await response.text();
+                alert(`Failed to enroll: ${error}`);
+            }
+        } catch (error) {
+            console.error('Enrollment error:', error);
+            alert('Error enrolling in course');
+        } finally {
+            spinner.classList.add('d-none');
+            btn.disabled = false;
+        }
+    }
+
+    openLesson(lessonId) {
+        const lesson = this.courseData.lessons.find(l => l.id === lessonId);
+        if (!lesson) return;
+
+        this.currentLesson = lesson;
+        
+        // Update modal content
+        document.getElementById('lessonModalTitle').textContent = lesson.title;
+        document.getElementById('lessonDescription').textContent = lesson.description;
+        
+        const textContent = document.getElementById('lessonTextContent');
+        textContent.innerHTML = lesson.content || 'Lesson content would be displayed here.';
+        
+        // Handle video section
+        const videoUrl = this.getVideoUrl(lesson.title);
+        const videoPlayer = document.getElementById('lessonVideoPlayer');
+        const videoSection = document.getElementById('lessonVideoSection');
+        
+        if (videoUrl) {
+            const embedUrl = this.convertYouTubeUrlToEmbed(videoUrl);
+            if (embedUrl) {
+                videoPlayer.src = embedUrl;
+                videoSection.style.display = 'block';
+            } else {
+                videoSection.style.display = 'none';
+            }
+        } else {
+            videoSection.style.display = 'none';
+        }
+        
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('lessonModal'));
+        modal.show();
+    }
+
+    setupEventListeners() {
+        // Mark complete button
+        document.getElementById('markCompleteBtn').addEventListener('click', () => {
+            if (this.currentLesson) {
+                this.markLessonComplete(this.currentLesson.id);
+            }
+        });
+
+        // Clear video when modal is closed
+        document.getElementById('lessonModal').addEventListener('hidden.bs.modal', () => {
+            document.getElementById('lessonVideoPlayer').src = '';
+        });
+    }
+
+    async markLessonComplete(lessonId) {
+        try {
+            // Here you would call an API to mark the lesson as complete
+            console.log(`Marking lesson ${lessonId} as complete`);
+            
+            // Update UI to show completion
+            const lessonItem = document.querySelector(`[data-lesson-id="${lessonId}"]`);
+            const statusIcon = lessonItem.querySelector('.lesson-status');
+            statusIcon.classList.remove('d-none');
+            
+            // Close modal
+            bootstrap.Modal.getInstance(document.getElementById('lessonModal')).hide();
+            
+            // Refresh enrollment status to update progress
+            await this.checkEnrollmentStatus();
+            
+        } catch (error) {
+            console.error('Error marking lesson complete:', error);
+        }
+    }
+
+    showError(message) {
+        document.getElementById('loading').innerHTML = `
+            <div class="alert alert-danger text-center" role="alert">
+                <i class="bi bi-exclamation-triangle display-4 mb-3"></i>
+                <h4>${message}</h4>
+                <a href="/Courses" class="btn btn-primary">Back to Courses</a>
+            </div>
+        `;
+    }
+}
+
+// Initialize when page loads
+let courseManager;
+document.addEventListener('DOMContentLoaded', () => {
+    courseManager = new CourseDetailManager();
+});
+</script>
+
+<style>
+.course-header {
+    margin-bottom: 2rem;
+}
+
+.language-flag {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.course-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.course-description {
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.course-action-card {
+    position: sticky;
+    top: 2rem;
+}
+
+.price {
+    font-weight: bold;
+}
+
+.course-stats .stat-number {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #667eea;
+}
+
+.course-stats .stat-label {
+    font-size: 0.8rem;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.lesson-item {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+}
+
+.lesson-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.lesson-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.lesson-title {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.instructor-profile .avatar-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+}
+
+.nav-tabs .nav-link.active {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    color: white;
+    border-color: transparent;
+}
+
+.nav-tabs .nav-link {
+    color: #667eea;
+    font-weight: 500;
+}
+
+.progress-bar {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+}
+
+.video-container {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    height: 0;
+    overflow: hidden;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.video-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+}
+
+.modal-xl {
+    max-width: 90%;
+}
+
+@@media (max-width: 768px) {
+    .course-title {
+        font-size: 2rem;
+    }
+    
+    .course-action-card {
+        position: static;
+        margin-top: 2rem;
+    }
+    
+    .meta-item {
+        margin-bottom: 1rem;
+    }
+    
+    .modal-xl {
+        max-width: 95%;
+    }
+    
+    .video-container {
+        padding-bottom: 56.25%; /* Maintain 16:9 aspect ratio on mobile */
+    }
+}
+</style>

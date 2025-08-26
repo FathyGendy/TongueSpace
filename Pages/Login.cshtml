@@ -1,0 +1,186 @@
+@page
+@model CoursePLatform.Pages.LoginModel
+
+@{
+    ViewData["Title"] = "Login - TongueSpace";
+}
+
+<style>
+    /* Background gradient for login area */
+    .login-page {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: calc(100vh - 120px); /* leaves header + footer space */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 40px 0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Floating bubbles */
+    .bubble {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.15);
+        animation: float 12s infinite ease-in-out;
+    }
+
+    .bubble:nth-child(1) {
+        width: 120px;
+        height: 120px;
+        bottom: 50px;
+        left: 30px;
+        animation-duration: 18s;
+    }
+
+    .bubble:nth-child(2) {
+        width: 80px;
+        height: 80px;
+        top: 100px;
+        right: 60px;
+        animation-duration: 15s;
+    }
+
+    .bubble:nth-child(3) {
+        width: 60px;
+        height: 60px;
+        bottom: 150px;
+        right: 120px;
+        animation-duration: 20s;
+    }
+
+    @@keyframes float {
+        0%, 100% {
+            transform: translateY(0);
+        }
+        50% {
+            transform: translateY(-30px);
+        }
+    }
+
+    .login-card {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.25);
+        color: #fff;
+        width: 100%;
+        max-width: 420px;
+        animation: fadeInUp 0.8s ease;
+        z-index: 10;
+    }
+
+    .login-card h2 {
+        font-weight: bold;
+        margin-bottom: 1rem;
+    }
+
+    .form-control {
+        border-radius: 12px;
+        padding-left: 40px;
+    }
+
+    .input-group-text {
+        border: none;
+        background: transparent;
+        color: #764ba2;
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        left: 10px;
+        font-size: 18px;
+    }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Gradient button (same as Register page) */
+    .btn-gradient {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border: none;
+        border-radius: 12px;
+        padding: 12px;
+        font-size: 16px;
+        color: #fff;
+        transition: 0.3s;
+    }
+
+    .btn-gradient:hover {
+        background: linear-gradient(135deg, #764ba2, #667eea);
+        transform: translateY(-2px);
+    }
+
+    a {
+        color: #fcd34d;
+        text-decoration: none;
+    }
+
+    a:hover {
+        text-decoration: underline;
+    }
+
+    /* Footer privacy link */
+    footer a[href*="Privacy"] {
+        color: #007bff !important;
+        text-decoration: underline !important;
+    }
+</style>
+
+<!-- Keep header from _Layout -->
+
+<div class="login-page">
+    <!-- Floating bubbles -->
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+
+    <div class="login-card text-center">
+        <h2>🌍 Welcome Back to <span style="color:#fcd34d;">TongueSpace</span>!</h2>
+        <p class="mb-4">Connect with language learners worldwide</p>
+
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+            <div class="mb-3 position-relative">
+                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                <input asp-for="Input.Email" class="form-control" placeholder="Email address" />
+                <span asp-validation-for="Input.Email" class="text-warning"></span>
+            </div>
+
+            <div class="mb-3 position-relative">
+                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                <input asp-for="Input.Password" type="password" class="form-control" placeholder="Password" />
+                <span asp-validation-for="Input.Password" class="text-warning"></span>
+            </div>
+
+            <div class="mb-3 form-check text-start">
+                <input asp-for="Input.RememberMe" class="form-check-input" />
+                <label asp-for="Input.RememberMe" class="form-check-label">Remember me</label>
+            </div>
+
+            <!-- Updated button -->
+            <button type="submit" class="btn btn-gradient w-100">Sign In</button>
+        </form>
+
+        <div class="text-center mt-3">
+            <p>Don't have an account? <a asp-page="/Register">Sign up here</a></p>
+        </div>
+    </div>
+</div>
+
+<!-- Footer stays same as in _Layout -->
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+}

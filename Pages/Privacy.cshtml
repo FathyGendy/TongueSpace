@@ -1,0 +1,101 @@
+﻿@page
+@model CoursePLatform.Pages.PrivacyModel
+@{
+    ViewData["Title"] = "Privacy Policy";
+    var lastUpdated = DateTime.Now.ToString("MMMM yyyy"); // Example: "August 2025"
+}
+
+<style>
+    body {
+        background: linear-gradient(135deg, #f6f9fc, #eef2f7);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .privacy-card {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    }
+
+    .privacy-card h4 {
+        display: flex;
+        align-items: center;
+        font-weight: 600;
+        margin-top: 1.5rem;
+        margin-bottom: 0.5rem;
+        color: #4a4a6a;
+    }
+
+    .privacy-card h4 i {
+        color: #667eea;
+        margin-right: 10px;
+    }
+
+    .privacy-card p {
+        color: #333;
+        line-height: 1.6;
+    }
+
+    .privacy-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .privacy-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .privacy-header p {
+        color: #555;
+        font-size: 1.1rem;
+    }
+
+    .last-updated {
+        display: inline-block;
+        background: #e9f2ff;
+        color: #2c5282;
+        font-size: 0.9rem;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-weight: 500;
+        margin-top: 10px;
+    }
+</style>
+
+<div class="container mt-5 mb-5">
+    <div class="privacy-header">
+        <h1>@ViewData["Title"]</h1>
+        <p class="lead">
+            This page outlines our privacy policy and how we handle your data.
+        </p>
+        <div class="last-updated">
+            <i class="bi bi-calendar-event"></i> Last updated: @lastUpdated
+        </div>
+    </div>
+
+    <div class="privacy-card">
+        <h4><i class="bi bi-collection"></i> 1. Information We Collect</h4>
+        <p>
+            We collect personal information that you voluntarily provide to us when you register on our website, express an interest in obtaining information about us or our products and services, when you participate in activities on the website, or otherwise when you contact us.
+        </p>
+
+        <h4><i class="bi bi-shield-check"></i> 2. How We Use Your Information</h4>
+        <p>
+            We use the personal information we collect for various business purposes described below. We process your personal information for these purposes in reliance on our legitimate business interests, in order to enter into or perform a contract with you, with your consent, and/or for compliance with our legal obligations.
+        </p>
+
+        <h4><i class="bi bi-person-badge"></i> 3. Your Privacy Rights</h4>
+        <p>
+            In some regions (like the European Economic Area), you have certain rights under applicable data protection laws. These may include the right to (i) request access and obtain a copy of your personal information, (ii) request rectification or erasure; (iii) restrict the processing of your personal information; and (iv) if applicable, to data portability.
+        </p>
+    </div>
+</div>
+
+<!-- Bootstrap Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">

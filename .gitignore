@@ -1,0 +1,78 @@
+@"
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Configuration files (CRITICAL)
+appsettings.json
+appsettings.Development.json
+appsettings.Production.json
+*.config
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# User secrets
+secrets.json
+UserSecrets/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+*.mdf
+*.ldf
+
+# Logs
+*.log
+logs/
+
+# IDE files
+.vs/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Publish profiles and outputs
+publish/
+PublishProfiles/
+*.pubxml
+*.publishproj
+
+# Package files
+*.nupkg
+*.snupkg
+
+# NuGet
+packages/
+
+# Test results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+"@ | Out-File -FilePath .gitignore -Encoding utf8
+# Deployment files (CRITICAL SECURITY)
+deployment.zip
+*.zip
+publish/
+PublishOutput/
+PublishProfiles/
+*.pubxml
+*.publishproj
+
+# Web server configs
+web.config
+Web.config

@@ -1,0 +1,162 @@
+@page 
+@model CoursePLatform.Pages.RegisterModel
+@{
+    ViewData["Title"] = "Register - TongueSpace";
+}
+
+<style>
+    .register-page {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: calc(100vh - 120px); /* header + footer space */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 40px 0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Floating bubbles */
+    .bubble {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.15);
+        animation: float 14s infinite ease-in-out;
+    }
+    .bubble:nth-child(1) { width: 120px; height: 120px; bottom: 50px; left: 30px; animation-duration: 20s; }
+    .bubble:nth-child(2) { width: 80px; height: 80px; top: 100px; right: 60px; animation-duration: 16s; }
+    .bubble:nth-child(3) { width: 60px; height: 60px; bottom: 150px; right: 120px; animation-duration: 18s; }
+
+    @@keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-25px); }
+    }
+
+    .register-card {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.25);
+        color: #fff;
+        width: 100%;
+        max-width: 520px;
+        animation: fadeInUp 0.8s ease;
+        z-index: 10;
+    }
+
+    .register-card h2 {
+        font-weight: bold;
+        margin-bottom: 1rem;
+    }
+
+    .form-control {
+        border-radius: 12px;
+        padding-left: 40px;
+    }
+
+    .input-group-text {
+        border: none;
+        background: transparent;
+        color: #764ba2;
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        left: 10px;
+        font-size: 18px;
+    }
+
+    /* Gradient button */
+    .btn-gradient {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border: none;
+        border-radius: 12px;
+        padding: 12px;
+        font-size: 16px;
+        color: #fff;
+        transition: 0.3s;
+    }
+
+    .btn-gradient:hover {
+        background: linear-gradient(135deg, #764ba2, #667eea);
+        transform: translateY(-2px);
+    }
+
+    a {
+        color: #fcd34d;
+        text-decoration: none;
+    }
+
+    a:hover {
+        text-decoration: underline;
+    }
+
+    /* Footer privacy link */
+    footer a[href*="Privacy"] {
+        color: #007bff !important;
+        text-decoration: underline !important;
+    }
+
+    @@keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<div class="register-page">
+    <!-- Floating bubbles -->
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+
+    <div class="register-card text-center">
+        <h2>✨ Join <span style="color:#fcd34d;">TongueSpace</span>!</h2>
+        <p class="mb-4">Start your journey of learning and connection</p>
+
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3 position-relative">
+                    <span class="input-group-text"><i class="bi bi-person"></i></span>
+                    <input asp-for="Input.FirstName" class="form-control" placeholder="First Name" />
+                    <span asp-validation-for="Input.FirstName" class="text-warning"></span>
+                </div>
+                <div class="col-md-6 mb-3 position-relative">
+                    <span class="input-group-text"><i class="bi bi-person"></i></span>
+                    <input asp-for="Input.LastName" class="form-control" placeholder="Last Name" />
+                    <span asp-validation-for="Input.LastName" class="text-warning"></span>
+                </div>
+            </div>
+
+            <div class="mb-3 position-relative">
+                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                <input asp-for="Input.Email" class="form-control" placeholder="Email" />
+                <span asp-validation-for="Input.Email" class="text-warning"></span>
+            </div>
+
+            <div class="mb-3 position-relative">
+                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                <input asp-for="Input.Password" type="password" class="form-control" placeholder="Password" />
+                <span asp-validation-for="Input.Password" class="text-warning"></span>
+            </div>
+
+            <div class="mb-3 position-relative">
+                <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                <input asp-for="Input.ConfirmPassword" type="password" class="form-control" placeholder="Confirm Password" />
+                <span asp-validation-for="Input.ConfirmPassword" class="text-warning"></span>
+            </div>
+
+            <button type="submit" class="btn btn-gradient w-100">Create Account</button>
+        </form>
+
+        <div class="text-center mt-3">
+            <p>Already have an account? <a asp-page="/Login">Sign in here</a></p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+}

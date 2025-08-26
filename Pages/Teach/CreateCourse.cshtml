@@ -1,0 +1,243 @@
+@* Pages/Teach/CreateCourse.cshtml *@
+@page "/teach/create-course"
+@model CoursePLatform.Pages.Teach.CreateCourseModel
+@{
+    ViewData["Title"] = "Create New Course - TongueSpace";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="text-center mb-4">
+                <h2>Create Your Course</h2>
+                <p class="text-muted">Share your language expertise with students worldwide</p>
+            </div>
+
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-book me-2"></i>Course Information
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form id="createCourseForm">
+                        <div class="mb-3">
+                            <label for="courseTitle" class="form-label">Course Title *</label>
+                            <input type="text" class="form-control" id="courseTitle" 
+                                   placeholder="e.g., Complete Arabic for Beginners" 
+                                   maxlength="100" required>
+                            <div class="form-text">Make it clear and descriptive</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="courseDescription" class="form-label">Course Description *</label>
+                            <textarea class="form-control" id="courseDescription" rows="4" 
+                                      placeholder="Describe what students will learn in this course..." 
+                                      maxlength="1000" required></textarea>
+                            <div class="form-text"><span id="descCount">0</span>/1000 characters</div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="language" class="form-label">Language *</label>
+                                <select class="form-select" id="language" required>
+                                    <option value="">Select language...</option>
+                                    <option value="Arabic">Arabic</option>
+                                    <option value="English">English</option>
+                                    <option value="Spanish">Spanish</option>
+                                    <option value="French">French</option>
+                                    <option value="German">German</option>
+                                    <option value="Chinese">Chinese</option>
+                                    <option value="Japanese">Japanese</option>
+                                    <option value="Italian">Italian</option>
+                                    <option value="Portuguese">Portuguese</option>
+                                    <option value="Russian">Russian</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="level" class="form-label">Level *</label>
+                                <select class="form-select" id="level" required>
+                                    <option value="">Select level...</option>
+                                    <option value="Beginner">Beginner</option>
+                                    <option value="Intermediate">Intermediate</option>
+                                    <option value="Advanced">Advanced</option>
+                                    <option value="All Levels">All Levels</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="price" class="form-label">Course Price (USD) *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" id="price" 
+                                           min="0" max="500" step="0.01" placeholder="29.99" required>
+                                </div>
+                                <div class="form-text">Set to 0 for free course</div>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="duration" class="form-label">Estimated Duration</label>
+                                <select class="form-select" id="duration">
+                                    <option value="">Select duration...</option>
+                                    <option value="1-2 hours">1-2 hours</option>
+                                    <option value="3-5 hours">3-5 hours</option>
+                                    <option value="6-10 hours">6-10 hours</option>
+                                    <option value="10+ hours">10+ hours</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="objectives" class="form-label">Learning Objectives *</label>
+                            <textarea class="form-control" id="objectives" rows="3" 
+                                      placeholder="• Students will learn basic conversation skills
+• Students will understand grammar fundamentals
+• Students will be able to introduce themselves" 
+                                      maxlength="500" required></textarea>
+                            <div class="form-text">What will students achieve after completing this course?</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="prerequisites" class="form-label">Prerequisites</label>
+                            <textarea class="form-control" id="prerequisites" rows="2" 
+                                      placeholder="No prior experience required (or specify requirements)" 
+                                      maxlength="300"></textarea>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Course Image</label>
+                            <div class="border border-dashed p-4 text-center">
+                                <i class="bi bi-cloud-upload display-4 text-muted mb-2"></i>
+                                <p class="text-muted">Upload course thumbnail (optional)</p>
+                                <input type="file" class="form-control" id="courseImage" accept="image/*">
+                                <small class="text-muted">Recommended: 1200x675 pixels</small>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="/instructor-dashboard" class="btn btn-outline-secondary me-md-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                                <span class="spinner-border spinner-border-sm d-none me-2"></span>
+                                Create Course
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    setupFormHandlers();
+});
+
+function setupFormHandlers() {
+    // Character counter
+    const descTextarea = document.getElementById('courseDescription');
+    const descCount = document.getElementById('descCount');
+    
+    descTextarea.addEventListener('input', () => {
+        descCount.textContent = descTextarea.value.length;
+    });
+
+    // Form submission
+    document.getElementById('createCourseForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await createCourse();
+    });
+}
+
+async function createCourse() {
+    const submitBtn = document.getElementById('submitBtn');
+    const spinner = submitBtn.querySelector('.spinner-border');
+    
+    // Show loading
+    spinner.classList.remove('d-none');
+    submitBtn.disabled = true;
+
+    try {
+        const formData = {
+            title: document.getElementById('courseTitle').value.trim(),
+            description: document.getElementById('courseDescription').value.trim(),
+            language: document.getElementById('language').value,
+            level: document.getElementById('level').value,
+            price: parseFloat(document.getElementById('price').value) || 0,
+            duration: document.getElementById('duration').value,
+            objectives: document.getElementById('objectives').value.trim(),
+            prerequisites: document.getElementById('prerequisites').value.trim()
+        };
+
+        console.log('Creating course with data:', formData);
+
+        // For now, simulate course creation
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // Show success message
+        showSuccessMessage();
+        
+        // Redirect after delay
+        setTimeout(() => {
+            window.location.href = '/instructor-dashboard';
+        }, 3000);
+
+    } catch (error) {
+        console.error('Error creating course:', error);
+        showErrorMessage(error.message);
+    } finally {
+        spinner.classList.add('d-none');
+        submitBtn.disabled = false;
+    }
+}
+
+function showSuccessMessage() {
+    const alert = document.createElement('div');
+    alert.className = 'alert alert-success alert-dismissible fade show';
+    alert.innerHTML = `
+        <i class="bi bi-check-circle me-2"></i>
+        <strong>Success!</strong> Your course has been created successfully. You'll be redirected to your dashboard.
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.querySelector('.card-body').insertBefore(alert, document.getElementById('createCourseForm'));
+}
+
+function showErrorMessage(message) {
+    const alert = document.createElement('div');
+    alert.className = 'alert alert-danger alert-dismissible fade show';
+    alert.innerHTML = `
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        <strong>Error:</strong> ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.querySelector('.card-body').insertBefore(alert, document.getElementById('createCourseForm'));
+}
+</script>
+}
+
+<style>
+.border-dashed {
+    border-style: dashed !important;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+}
+
+.card {
+    border-radius: 12px;
+}
+
+.card-header {
+    border-radius: 12px 12px 0 0 !important;
+}
+</style>
